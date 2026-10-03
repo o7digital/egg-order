@@ -1,0 +1,11 @@
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const html = await readFile('index.html', 'utf8');
+const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+new vm.Script(script);
+assert(!/#1769e0|#0e274d|#eaf4ff/.test(html), 'Remove original blue palette');
+assert(html.includes('aria-label="Rechercher une commande"'));
+const logo = await readFile('assets/el-gallo-giro-logo.png');
+assert.equal(logo.subarray(1, 4).toString(), 'PNG');
+console.log('Script syntax, logo and page checks passed');

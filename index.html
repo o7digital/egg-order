@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El Gallo Giro · Commandes Artimex</title>
+  <meta name="description" content="Interface pilote de suivi des commandes El Gallo Giro vers Artimex et GlobalBake.">
+  <link rel="icon" href="/assets/el-gallo-giro-logo.png">
+  <style>
+:root{
+  --bg:#f6f1e9; --surface:#ffffff; --ink:#34251e; --muted:#827166;
+  --line:#e8ded2; --blue:#925c35; --blue-2:#f3e7d7; --green:#159a65;
+  --green-2:#e8f8f0; --amber:#b96a10; --amber-2:#fff3df; --red:#d84e54;
+  --shadow:0 12px 36px rgba(78,49,29,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:24px}
+.brand{padding:7px 10px 20px;border-bottom:1px solid var(--line)}
+.brand-mark{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+.brand-mark .mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#38261c,#805238);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow)}
+.brand small{display:block;color:var(--muted);margin-top:8px;line-height:1.35}
+.nav{display:flex;flex-direction:column;gap:7px}
+.nav-item{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:11px;color:#776050;cursor:pointer;display:flex;align-items:center;gap:10px}
+.nav-item:hover,.nav-item.active{background:var(--blue-2);color:var(--blue);font-weight:700}
+.nav-icon{width:20px;text-align:center}
+.sidebar-bottom{margin-top:auto}
+.pilot-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(180deg,#fbf5ed,#fff)}
+.pilot-title{display:flex;gap:8px;align-items:center;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;background:#17b26a}
+.progress{height:7px;background:#e8ded2;border-radius:999px;overflow:hidden;margin-top:12px}
+.progress span{display:block;height:100%;width:28%;background:var(--blue);border-radius:999px}
+
+.main{padding:18px 20px 30px;min-width:0}
+.topbar{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:17px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 24px rgba(78,49,29,.05)}
+.title-wrap h1{font-size:23px;margin:0 0 4px;letter-spacing:-.02em}
+.title-wrap p{margin:0;color:var(--muted);font-size:13px}
+.header-right{display:flex;gap:9px;align-items:center}
+.pill{padding:8px 10px;border-radius:999px;background:#f3e7d7;color:var(--blue);font-weight:700;font-size:12px}
+.pill.green{background:var(--green-2);color:var(--green)}
+.avatar{width:38px;height:38px;border-radius:50%;background:#ede0cc;color:#69462d;display:grid;place-items:center;font-weight:800}
+
+.flowbar{margin-top:13px;background:linear-gradient(100deg,#38261c,#68442d);border-radius:16px;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;overflow:auto}
+.flow-node{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.flow-icon{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.13);display:grid;place-items:center}
+.flow-text b{display:block;font-size:12px}.flow-text span{font-size:10px;opacity:.72}
+.arrow{opacity:.45;font-size:18px}
+.flow-node.destination .flow-icon{background:#e6fff3;color:#0d8a58}
+.flow-node.engine .flow-icon{background:#f3e7d7;color:#925c35}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:13px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:0 5px 18px rgba(78,49,29,.04)}
+.stat-label{color:var(--muted);font-size:12px}.stat-value{font-size:22px;font-weight:800;margin-top:6px}.stat-foot{font-size:11px;color:#827166;margin-top:4px}
+.stat.greenish{background:linear-gradient(135deg,#fff,#f0fbf6)}
+
+.workspace{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr) 310px;gap:12px;margin-top:13px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 5px 20px rgba(78,49,29,.045);overflow:hidden}
+.card-head{padding:15px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-head h2{font-size:15px;margin:0}
+.controls{padding:12px 14px;display:grid;grid-template-columns:1.15fr .8fr .8fr auto;gap:8px;border-bottom:1px solid var(--line)}
+.search{position:relative}.search input{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px 9px 31px;background:#fffdf9}
+.search:before{content:"⌕";position:absolute;left:10px;top:7px;color:#827166;font-size:18px}
+select{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8px 10px;color:#776050;min-width:0}
+.ghost{border:1px solid var(--line);background:#fff;color:var(--blue);border-radius:9px;padding:8px 10px;cursor:pointer}
+.table-wrap{overflow:auto;max-height:545px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{position:sticky;top:0;background:#faf6f0;color:#827166;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:10px;border-bottom:1px solid var(--line);z-index:1}
+td{padding:10px;border-bottom:1px solid #eee6dc;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#fcf8f2}
+tbody tr.selected{background:#f4e8d8}
+.amount{text-align:right;font-weight:700}
+.radio-dot{display:inline-block;width:13px;height:13px;border:1.5px solid #9ba6b7;border-radius:4px}
+.radio-dot.on{background:var(--blue);border-color:var(--blue);box-shadow:inset 0 0 0 3px #f4e8d8}
+.badge{display:inline-flex;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:700}
+.badge.blue{background:#f3e7d7;color:#925c35}.badge.amber{background:#fff1da;color:#a45c0a}.badge.gray{background:#edf0f4;color:#5d6676}
+.table-footer{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px}
+.primary{border:0;background:var(--blue);color:#fff;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer;box-shadow:0 8px 18px rgba(78,49,29,.18)}
+.primary.success{background:var(--green)}
+
+.detail{padding:15px}
+.po-title{display:flex;align-items:center;gap:8px}.po-title h3{margin:0;font-size:20px}.detail-meta{color:#776050;font-size:12px;margin-top:5px}.detail-date{font-size:11px;color:#827166;margin-top:3px}
+.steps{margin-top:17px}
+.step{position:relative;padding:0 0 20px 38px}
+.step:not(:last-child):before{content:"";position:absolute;left:13px;top:25px;width:2px;height:calc(100% - 10px);background:#e5d8c8}
+.step-index{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:#f2e9df;color:#657087;display:grid;place-items:center;font-size:11px;font-weight:800}
+.step.done .step-index{background:var(--green);color:#fff}.step.active .step-index{background:var(--blue);color:#fff}
+.step b{font-size:12px}.step p{margin:3px 0 0;color:#827166;font-size:10px}
+.items-title{display:flex;align-items:center;justify-content:space-between;margin-top:2px;font-size:11px;font-weight:800}
+.link-btn{border:0;background:transparent;color:var(--blue);font-size:11px;cursor:pointer;padding:0}
+.sku{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f4eee5;padding:3px 5px;border-radius:5px}
+.mapping-state{font-size:9px;font-weight:800;padding:3px 5px;border-radius:5px}.mapping-state.mapped{background:#e8f8f0;color:#118054}.mapping-state.review{background:#fff2df;color:#a45c0a}
+
+.checklist{padding:9px 14px 13px}.check{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #eee6dc}.check:last-child{border-bottom:0}.check input{margin-top:2px;accent-color:var(--blue)}.check b{display:block;font-size:11px}.check small{display:block;color:#827166;margin-top:2px;font-size:9px}
+.note{padding:14px}.note textarea{width:100%;min-height:92px;border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical;background:#fffdf9}
+
+.objective{margin-top:13px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 16px;display:flex;gap:14px;align-items:center}
+.target{width:36px;height:36px;border-radius:11px;background:#f3e7d7;color:var(--blue);display:grid;place-items:center;font-size:18px}.objective b{font-size:12px}.objective span{color:#827166;font-size:11px}
+
+.toast{position:fixed;right:22px;bottom:22px;background:#34251e;color:#fff;padding:12px 15px;border-radius:10px;box-shadow:var(--shadow);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s;font-size:12px;z-index:50}.toast.show{transform:translateY(0);opacity:1}
+.modal{position:fixed;inset:0;background:rgba(78,49,29,.45);display:none;align-items:center;justify-content:center;padding:30px;z-index:60}.modal.open{display:flex}.modal-box{background:#fff;width:min(780px,94vw);max-height:84vh;overflow:auto;border-radius:16px;box-shadow:0 25px 70px rgba(78,49,29,.28)}.modal-head{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-head h3{margin:0}.close{border:0;background:#f2e9df;width:30px;height:30px;border-radius:8px;cursor:pointer}.modal-body{padding:16px 18px}
+.arch{display:grid;grid-template-columns:1fr auto 1fr auto 1.2fr auto 1fr;align-items:center;gap:8px;margin:14px 0 20px}.arch-node{border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}.arch-node b{display:block;font-size:12px}.arch-node span{font-size:10px;color:#827166}.arch-arrow{color:#af9885}
+.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.req{padding:10px;border:1px solid var(--line);border-radius:10px;font-size:11px}.req strong{display:block;margin-bottom:3px}
+
+@media(max-width:1200px){.workspace{grid-template-columns:1fr 360px}.rightcol{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:10px}.workspace{grid-template-columns:1fr}.rightcol{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr 1fr}.topbar{align-items:flex-start}.header-right{display:none}.flowbar{padding:12px}.arch{grid-template-columns:1fr}.arch-arrow{transform:rotate(90deg)}}
+
+/* El Gallo Giro — crème, café et caramel */
+.brand-mark{flex-direction:column;align-items:flex-start;gap:14px;font-size:12px;letter-spacing:.15em;color:#805238}
+.brand-mark img{width:170px;height:auto;object-fit:contain}
+.sidebar{background:#fffcf7}
+.stat.greenish{background:linear-gradient(135deg,#fffdf9,#f2eadc)}
+.brand small{font-size:12px}
+body{font-size:16px}
+.stat-label,.detail-meta,.check b,.flow-text b,.nav-item,table,.objective b{font-size:14px}
+.stat-foot,.flow-text span,.step p,.check small,.mapping-state,.badge,th,.detail-date,.table-footer,.items-title,.link-btn,.sku,.objective span,.req,.arch-node span{font-size:12px}
+.step b{font-size:14px}
+.check small{line-height:1.5}
+.stat-value{font-size:24px}
+.workspace{grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr)}
+.rightcol{grid-column:1/-1;display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
+.rightcol>.card{margin-top:0!important}
+.checklist{display:grid;grid-template-columns:1fr 1fr;column-gap:20px}
+.note textarea{font:inherit;min-height:200px;color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,tr:focus-visible{outline:3px solid #b88147;outline-offset:3px}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+@media(min-width:1700px){.workspace{grid-template-columns:minmax(0,1.55fr) minmax(350px,1fr) 310px}.rightcol{grid-column:auto;display:block}.checklist{display:block}.rightcol>.card+ .card{margin-top:12px!important}}
+@media(max-width:1050px){.workspace{grid-template-columns:1fr}.rightcol{grid-template-columns:1fr 1fr}.checklist{display:block}}
+@media(max-width:820px){.sidebar{display:flex;padding:12px;gap:10px;border-right:0;border-bottom:1px solid var(--line)}.brand{border:0;padding:0}.brand-mark{flex-direction:row;align-items:center;font-size:10px}.brand-mark img{width:100px}.brand small,.sidebar-bottom{display:none}.nav{flex-direction:row;overflow:auto}.nav-item{white-space:nowrap;font-size:12px;padding:9px}.rightcol{grid-template-columns:1fr}.topbar{padding:16px}.title-wrap h1{font-size:20px}.objective{align-items:flex-start}.target{flex-shrink:0}.table-footer{gap:12px;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><img src="/assets/el-gallo-giro-logo.png" alt="El Gallo Giro" width="170"><div>ORDER INTERFACE</div></div>
+      <small>El Gallo Giro → Artimex<br>R365 / GlobalBake Test</small>
+    </div>
+
+    <nav class="nav" aria-label="Navigation principale">
+      <button class="nav-item active" data-target="workspace"><span class="nav-icon">▤</span>Commandes R365</button>
+      <button class="nav-item" id="mappingBtn"><span class="nav-icon">⇄</span>Mapping Produits</button>
+      <button class="nav-item" data-target="rightcol"><span class="nav-icon">✓</span>Contrôles</button>
+      <button class="nav-item" data-target="objective"><span class="nav-icon">◎</span>Projet pilote</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="pilot-card">
+        <div class="pilot-title"><span class="dot"></span>Projet pilote</div>
+        <small style="color:#827166">1 Gallo validé avant extension aux 12 restaurants</small>
+        <div class="progress"><span></span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h1>Order EGG GB Artimex Interface</h1>
+        <p>Flux pilote des commandes El Gallo Giro vers Artimex / GlobalBake</p>
+      </div>
+      <div class="header-right">
+        <span class="pill">12 restaurants</span>
+        <span class="pill green">Projet pilote</span>
+        <div class="avatar">O7</div>
+      </div>
+    </header>
+
+    <section class="flowbar">
+      <div class="flow-node"><div class="flow-icon">R</div><div class="flow-text"><b>Restaurant365</b><span>Commandes des Gallo</span></div></div>
+      <span class="arrow">→</span>
+      <div class="flow-node"><div class="flow-icon">12</div><div class="flow-text"><b>El Gallo Giro</b><span>Sélection du restaurant</span></div></div>
+      <span class="arrow">→</span>
+      <div class="flow-node engine"><div class="flow-icon">⚙</div><div class="flow-text"><b>Order Interface</b><span>Contrôle + mapping</span></div></div>
+      <span class="arrow">→</span>
+      <div class="flow-node"><div class="flow-icon">DB</div><div class="flow-text"><b>Base intermédiaire</b><span>Logs + anti-doublons</span></div></div>
+      <span class="arrow">→</span>
+      <div class="flow-node destination"><div class="flow-icon">GB</div><div class="flow-text"><b>GlobalBake Test</b><span>Commande préparée Artimex</span></div></div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><div class="stat-label">Restaurants suivis</div><div class="stat-value">12</div><div class="stat-foot">El Gallo Giro</div></div>
+      <div class="stat"><div class="stat-label">Restaurant pilote</div><div class="stat-value" id="pilotName">EGG Canoga</div><div class="stat-foot">Phase 1</div></div>
+      <div class="stat"><div class="stat-label">Commandes Artimex visibles</div><div class="stat-value"><span id="visibleCount">12</span></div><div class="stat-foot">selon les filtres</div></div>
+      <div class="stat greenish"><div class="stat-label">Commande sélectionnée</div><div class="stat-value" id="lastPo">PO 021301</div><div class="stat-foot">prête à contrôler</div></div>
+    </section>
+
+    <section class="workspace">
+      <div class="card">
+        <div class="card-head">
+          <h2>Commandes R365 — fournisseur Artimex</h2>
+          <span class="pill">Démonstration · données du mockup</span>
+        </div>
+        <div class="controls">
+          <div class="search"><input aria-label="Rechercher une commande" id="searchInput" placeholder="PO, restaurant, statut..."></div>
+          <select aria-label="Filtrer par restaurant" id="restaurantFilter">
+            <option value="all">Tous les Gallo</option>
+            <option>EGG Anaheim</option><option>EGG Bellflower</option><option>EGG Bristol</option>
+            <option>EGG Canoga</option><option>EGG ELA</option><option>EGG Lynwood</option>
+            <option>EGG Pacific</option><option>EGG Panorama</option><option>EGG San Fernando</option>
+            <option>EGG Van Nuys</option>
+          </select>
+          <select aria-label="Filtrer par statut" id="statusFilter"><option value="all">Tous statuts</option><option>Submitted</option><option>Invoiced</option><option>Open</option></select>
+          <button class="ghost" id="resetBtn">Réinitialiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>Fournisseur</th><th>PO</th><th>Restaurant</th><th>Statut</th><th>Livraison</th><th style="text-align:right">Montant</th></tr></thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span>Cliquer sur une commande pour l’ouvrir</span>
+          <button class="primary" id="treatBtn">Traiter la commande →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Traitement de la commande</h2><button class="link-btn" onclick="document.getElementById('mappingBtn').click()">Voir mapping</button></div>
+        <div class="detail">
+          <div class="po-title"><h3 id="detailPo">PO 021301</h3><span id="detailStatus" class="badge amber">Submitted</span></div>
+          <div class="detail-meta" id="detailMeta">Artimex Llc · EGG Canoga · $2,509.54</div>
+          <div class="detail-date" id="detailDate">Livraison : 10/02/2026</div>
+
+          <div class="steps">
+            <div class="step done"><span class="step-index">✓</span><b>R365 récupéré</b><p>Lecture de la commande fournisseur Artimex</p></div>
+            <div class="step done"><span class="step-index">✓</span><b>Vérification</b><p>Restaurant, PO, date et total contrôlés</p></div>
+            <div class="step active"><span class="step-index">3</span><b>Mapping articles</b><p>Correspondance références R365 ↔ Artimex</p></div>
+            <div class="step"><span class="step-index">4</span><b>Base de données</b><p>Journalisation et contrôle anti-doublons</p></div>
+            <div class="step"><span class="step-index">5</span><b>GlobalBake Test</b><p>Préparation du payload/import test</p></div>
+          </div>
+
+          <div class="items-title"><span>Aperçu mapping produits</span><button class="link-btn" onclick="document.getElementById('mappingBtn').click()">Voir tout</button></div>
+          <div class="table-wrap" style="max-height:none;margin-top:7px">
+            <table>
+              <thead><tr><th>Article R365</th><th>Qté</th><th>Unité</th><th>Code Artimex</th><th>État</th></tr></thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="rightcol">
+        <div class="card">
+          <div class="card-head"><h2>Checklist / Pré-requis</h2></div>
+          <div class="checklist">
+            <label class="check"><input type="checkbox" checked><span><b>Accès Restaurant365</b><small>Connexion et droits disponibles</small></span></label>
+            <label class="check"><input type="checkbox" checked><span><b>Accès GlobalBake Test</b><small>Environnement de test disponible</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Liste définitive des 12 Gallo</b><small>IDs / locations R365 à confirmer</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Détail des lignes de commande</b><small>Produits, quantités, unités, SKU</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Correspondance SKU Artimex</b><small>Mapping R365 ↔ GlobalBake</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Règles de quantité / unités</b><small>CS, EA, poids, conversions éventuelles</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Validation d’un Gallo pilote</b><small>EGG Canoga proposé</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Journal des imports</b><small>PO envoyé, date, statut, erreur</small></span></label>
+            <label class="check"><input type="checkbox"><span><b>Contrôle anti-doublons</b><small>Empêcher le renvoi du même PO</small></span></label>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="card-head"><h2>Notes de test</h2></div>
+          <div class="note"><textarea aria-label="Notes de test" placeholder="Ex. SKU manquant, unité à confirmer, erreur GlobalBake..."></textarea></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="objective">
+      <div class="target">◎</div>
+      <div><b>Objectif de la phase 1</b><br><span>Prendre une commande Artimex provenant d’un Gallo dans R365, contrôler et mapper ses lignes, l’enregistrer dans la base intermédiaire puis préparer son import dans GlobalBake Test. Une fois validé : extension aux 12 restaurants.</span></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalTitle">Architecture & besoins techniques</h3><button class="close" id="closeModal" aria-label="Fermer">×</button></div>
+    <div class="modal-body">
+      <p style="margin-top:0;color:#827166;font-size:12px">Ce module sert de couche intermédiaire contrôlée entre les commandes Restaurant365 et GlobalBake Test.</p>
+      <div class="arch">
+        <div class="arch-node"><b>Restaurant365</b><span>PO Artimex</span></div><div class="arch-arrow">→</div>
+        <div class="arch-node"><b>Gallo sélectionné</b><span>Location / PO</span></div><div class="arch-arrow">→</div>
+        <div class="arch-node"><b>O7 Interface</b><span>Mapping + règles + logs</span></div><div class="arch-arrow">→</div>
+        <div class="arch-node"><b>GlobalBake Test</b><span>Import contrôlé</span></div>
+      </div>
+      <h4>Checklist technique</h4>
+      <div class="req-grid">
+        <div class="req"><strong>1. Accès R365</strong>Lecture des commandes Artimex et surtout de leurs lignes produits.</div>
+        <div class="req"><strong>2. Identification des 12 locations</strong>ID R365 et nom exact de chaque El Gallo Giro.</div>
+        <div class="req"><strong>3. Mapping produits</strong>SKU R365 ↔ code produit Artimex / GlobalBake.</div>
+        <div class="req"><strong>4. Unités & conversions</strong>CS, EA, poids, cartons et règles de quantité.</div>
+        <div class="req"><strong>5. Base intermédiaire</strong>PO, lignes, statut d’import, erreurs et horodatage.</div>
+        <div class="req"><strong>6. Anti-doublons</strong>Clé unique par PO + restaurant + fournisseur.</div>
+        <div class="req"><strong>7. GlobalBake Test</strong>Format d’import / JSON et retour de validation.</div>
+        <div class="req"><strong>8. Pilote</strong>Tester un Gallo de bout en bout avant les 11 autres.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>const ORDERS = [{"po": "021336", "location": "EGG Van Nuys", "status": "Invoiced", "total": 3108.42, "orderDate": "10/02/2026", "deliveryDate": "10/03/2026"}, {"po": "021341", "location": "EGG Lynwood", "status": "Submitted", "total": 1789.98, "orderDate": "10/02/2026", "deliveryDate": "10/03/2026"}, {"po": "021340", "location": "EGG Panorama", "status": "Submitted", "total": 115.44, "orderDate": "10/02/2026", "deliveryDate": "10/03/2026"}, {"po": "021327", "location": "EGG Pacific", "status": "Submitted", "total": 2900.39, "orderDate": "10/02/2026", "deliveryDate": "10/03/2026"}, {"po": "021333", "location": "EGG ELA", "status": "Open", "total": 2500.65, "orderDate": "10/01/2026", "deliveryDate": "10/03/2026"}, {"po": "021322", "location": "EGG Bristol", "status": "Invoiced", "total": 122.84, "orderDate": "10/01/2026", "deliveryDate": "10/02/2026"}, {"po": "021332", "location": "EGG Bellflower", "status": "Submitted", "total": 718.33, "orderDate": "10/01/2026", "deliveryDate": "10/02/2026"}, {"po": "021324", "location": "EGG Bristol", "status": "Submitted", "total": 4543.65, "orderDate": "10/01/2026", "deliveryDate": "10/05/2026"}, {"po": "021326", "location": "EGG Anaheim", "status": "Submitted", "total": 2175.45, "orderDate": "10/01/2026", "deliveryDate": "10/02/2026"}, {"po": "021301", "location": "EGG Canoga", "status": "Submitted", "total": 2509.54, "orderDate": "10/01/2026", "deliveryDate": "10/02/2026"}, {"po": "021296", "location": "EGG Panorama", "status": "Invoiced", "total": 8282.31, "orderDate": "09/30/2026", "deliveryDate": "10/01/2026"}, {"po": "021294", "location": "EGG San Fernando", "status": "Open", "total": 6431.58, "orderDate": "09/30/2026", "deliveryDate": "10/02/2026"}];
+const SAMPLE_ITEMS = [{"r365": "Tortilla Maïs 6″", "qty": 12, "unit": "CS", "artimex": "ART-00123", "state": "mapped"}, {"r365": "Haricots noirs", "qty": 8, "unit": "CS", "artimex": "ART-00456", "state": "mapped"}, {"r365": "Riz mexicain", "qty": 6, "unit": "CS", "artimex": "ART-00789", "state": "mapped"}, {"r365": "Salsa roja", "qty": 4, "unit": "CS", "artimex": "ART-00234", "state": "mapped"}, {"r365": "Crème aigre", "qty": 3, "unit": "CS", "artimex": "ART-00987", "state": "review"}];
+
+let selectedPO = "021301";
+let filteredOrders = [...ORDERS];
+let processed = false;
+const preparedOrders = new Set();
+
+const money = (v) => new Intl.NumberFormat("en-US", {style:"currency", currency:"USD"}).format(v);
+
+function statusClass(status) {
+  return "badge " + (status === "Invoiced" ? "blue" : status === "Submitted" ? "amber" : "gray");
+}
+
+function renderOrders() {
+  const tbody = document.querySelector("#ordersBody");
+  tbody.innerHTML = "";
+  filteredOrders.forEach(o => {
+    const tr = document.createElement("tr");
+    tr.dataset.po = o.po;
+    tr.tabIndex = 0;
+    tr.setAttribute('aria-label', `Ouvrir PO ${o.po}, ${o.location}`);
+    tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tr.click(); } });
+    if (o.po === selectedPO) tr.classList.add("selected");
+    tr.innerHTML = `
+      <td><span class="radio-dot ${o.po === selectedPO ? "on" : ""}"></span></td>
+      <td><strong>Artimex Llc</strong></td>
+      <td>${o.po}</td>
+      <td>${o.location}</td>
+      <td><span class="${statusClass(o.status)}">${o.status}</span></td>
+      <td>${o.deliveryDate}</td>
+      <td class="amount">${money(o.total)}</td>
+    `;
+    tr.addEventListener("click", () => {
+      selectedPO = o.po;
+      processed = preparedOrders.has(selectedPO);
+      renderOrders();
+      renderDetail();
+    });
+    tbody.appendChild(tr);
+  });
+  if (!filteredOrders.length) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px">Aucune commande ne correspond aux filtres.</td></tr>';
+  document.querySelector("#visibleCount").textContent = filteredOrders.length;
+}
+
+function renderDetail() {
+  const o = filteredOrders.find(x => x.po === selectedPO);
+  document.querySelector('#treatBtn').disabled = !o;
+  document.querySelector('.detail').hidden = !o;
+  document.querySelector('#lastPo').textContent = o ? `PO ${o.po}` : 'Aucune';
+  if (!o) return;
+  document.querySelector('#detailStatus').textContent = o.status;
+  document.querySelector('#detailStatus').className = statusClass(o.status);
+  document.querySelector("#detailPo").textContent = `PO ${o.po}`;
+  document.querySelector("#detailMeta").textContent = `Artimex Llc · ${o.location} · ${money(o.total)}`;
+  document.querySelector("#detailDate").textContent = `Livraison : ${o.deliveryDate}`;
+
+  document.querySelector("#lastPo").textContent = `PO ${o.po}`;
+  document.querySelector("#treatBtn").textContent = processed ? "Commande préparée ✓" : "Traiter la commande →";
+  document.querySelector("#treatBtn").classList.toggle("success", processed);
+
+  document.querySelectorAll(".step").forEach((s, i) => {
+    s.classList.remove("done","active");
+    if (processed) {
+      if (i < 4) s.classList.add("done");
+      else s.classList.add("active");
+    } else {
+      if (i < 2) s.classList.add("done");
+      if (i === 2) s.classList.add("active");
+    }
+  });
+}
+
+function filterOrders() {
+  const restaurant = document.querySelector("#restaurantFilter").value;
+  const status = document.querySelector("#statusFilter").value;
+  const q = document.querySelector("#searchInput").value.trim().toLowerCase();
+
+  filteredOrders = ORDERS.filter(o => {
+    const okRestaurant = restaurant === "all" || o.location === restaurant;
+    const okStatus = status === "all" || o.status === status;
+    const hay = `Artimex Llc ${o.po} ${o.location} ${o.status}`.toLowerCase();
+    const okQuery = !q || hay.includes(q);
+    return okRestaurant && okStatus && okQuery;
+  });
+
+  if (!filteredOrders.some(o => o.po === selectedPO) && filteredOrders[0]) selectedPO = filteredOrders[0].po;
+  processed = preparedOrders.has(selectedPO);
+  renderOrders();
+  renderDetail();
+}
+
+function renderItems() {
+  const body = document.querySelector("#itemsBody");
+  body.innerHTML = SAMPLE_ITEMS.map(i => `
+    <tr>
+      <td>${i.r365}</td>
+      <td>${i.qty}</td>
+      <td>${i.unit}</td>
+      <td><span class="sku">${i.artimex}</span></td>
+      <td><span class="mapping-state ${i.state}">${i.state === "mapped" ? "OK" : "À vérifier"}</span></td>
+    </tr>
+  `).join("");
+}
+
+let modalTrigger;
+function openModal() {
+  modalTrigger = document.activeElement;
+  document.querySelector("#modal").classList.add("open");
+  document.querySelector("#closeModal").focus();
+}
+function closeModal() {
+  document.querySelector("#modal").classList.remove("open");
+  modalTrigger?.focus();
+}
+
+document.querySelector("#restaurantFilter").addEventListener("change", filterOrders);
+document.querySelector("#statusFilter").addEventListener("change", filterOrders);
+document.querySelector("#searchInput").addEventListener("input", filterOrders);
+document.querySelector("#resetBtn").addEventListener("click", () => {
+  document.querySelector("#restaurantFilter").value = "all";
+  document.querySelector("#statusFilter").value = "all";
+  document.querySelector("#searchInput").value = "";
+  filterOrders();
+});
+document.querySelector("#treatBtn").addEventListener("click", () => {
+  processed = !processed;
+  if (processed) preparedOrders.add(selectedPO); else preparedOrders.delete(selectedPO);
+  renderDetail();
+  document.querySelector("#toast").classList.add("show");
+  document.querySelector("#toast").textContent = processed
+    ? "Simulation : commande préparée. Aucun envoi à GlobalBake."
+    : "Simulation remise à l’étape Mapping.";
+  setTimeout(() => document.querySelector("#toast").classList.remove("show"), 2500);
+});
+document.querySelector("#mappingBtn").addEventListener("click", openModal);
+document.querySelector("#closeModal").addEventListener("click", closeModal);
+document.querySelector("#modal").addEventListener("click", (e) => {
+  if (e.target.id === "modal") closeModal();
+});
+
+document.querySelectorAll(".nav-item").forEach(x => x.addEventListener("click", () => {
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  x.classList.add("active");
+  if (x.dataset.target) document.querySelector("." + x.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
+}));
+
+document.addEventListener('keydown', e => {
+  if (!document.querySelector('#modal').classList.contains('open')) return;
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Tab') { e.preventDefault(); document.querySelector('#closeModal').focus(); }
+});
+renderItems();
+renderOrders();
+renderDetail();
+</script>
+</body>
+</html>
