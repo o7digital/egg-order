@@ -143,7 +143,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     </div>
 
     <nav class="nav" aria-label="Navigation principale">
-      <button class="nav-item active" data-target="workspace"><span class="nav-icon">▤</span>Commandes R365</button>
+      <button class="nav-item active" data-target="upload-panel"><span class="nav-icon">▤</span>Envoyer un CSV</button>
       <button class="nav-item" id="mappingBtn"><span class="nav-icon">⇄</span>Mapping Produits</button>
       <button class="nav-item" data-target="rightcol"><span class="nav-icon">✓</span>Contrôles</button>
       <button class="nav-item" data-target="objective"><span class="nav-icon">◎</span>Projet pilote</button>
@@ -176,13 +176,32 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <span class="arrow">→</span>
       <div class="flow-node"><div class="flow-icon">12</div><div class="flow-text"><b>El Gallo Giro</b><span>Sélection du restaurant</span></div></div>
       <span class="arrow">→</span>
-      <div class="flow-node engine"><div class="flow-icon">⚙</div><div class="flow-text"><b>Order Interface</b><span>Contrôle + mapping</span></div></div>
+      <div class="flow-node engine"><div class="flow-icon">⚙</div><div class="flow-text"><b>Order Interface</b><span>Dépôt du CSV</span></div></div>
       <span class="arrow">→</span>
-      <div class="flow-node"><div class="flow-icon">DB</div><div class="flow-text"><b>Base intermédiaire</b><span>Logs + anti-doublons</span></div></div>
+      <div class="flow-node"><div class="flow-icon">DB</div><div class="flow-text"><b>Serveur Artimex</b><span>Fichier identifié par restaurant</span></div></div>
       <span class="arrow">→</span>
-      <div class="flow-node destination"><div class="flow-icon">GB</div><div class="flow-text"><b>GlobalBake Test</b><span>Commande préparée Artimex</span></div></div>
+      <div class="flow-node destination"><div class="flow-icon">GB</div><div class="flow-text"><b>GlobalBake Test</b><span>Import par notre équipe</span></div></div>
     </section>
 
+    <section class="upload-panel card" style="margin-top:16px;padding:24px">
+      <h2 style="margin-top:0">1. Export manuel R365 — méthode à tester</h2>
+      <p>Depuis le restaurant, exportez votre document R365 au format CSV, puis envoyez-le ici. Notre équipe récupère le fichier sur le serveur Artimex et l’importe dans GlobalBake.</p>
+      <form id="uploadForm" style="display:grid;gap:16px;max-width:650px">
+        <label>Nom du restaurant<br><input id="uploadRestaurant" required minlength="2" maxlength="80" list="restaurantNames" placeholder="Ex. EGG Canoga" pattern="[A-Za-z0-9][A-Za-z0-9 ._\-]{1,79}" style="width:100%;padding:12px;margin-top:6px"></label>
+        <datalist id="restaurantNames"></datalist>
+        <label>Fichier exporté depuis R365 (.csv, 2 Mo maximum)<br><input id="csvFile" type="file" accept=".csv,text/csv" required style="margin-top:8px"></label>
+        <label>Code d’accès fourni par Artimex<br><input id="uploadCode" type="password" required autocomplete="off" style="width:100%;padding:12px;margin-top:6px"></label>
+        <p style="margin:0;color:#776050">Le nom du fichier déposé contient le restaurant, la date et le nom de votre export. Le contenu du CSV est conservé tel quel.</p>
+        <button class="primary" id="uploadSubmit" type="submit">Envoyer le CSV à Artimex</button>
+        <p id="uploadStatus" role="status" aria-live="polite" style="overflow-wrap:anywhere;margin:0"></p>
+      </form>
+    </section>
+    <section class="card" style="padding:24px;margin-top:16px">
+      <h2 style="margin-top:0">2. Récupération automatique via l’API R365 — à venir</h2>
+      <p>Notre système récupérera les données avec la clé API R365 et déposera le CSV au nom du restaurant sur le serveur Artimex.</p>
+      <p>Nous commençons par l’export manuel pour identifier le bon rapport R365 et valider son import dans GlobalBake. Aucune récupération API n’est active.</p>
+    </section>
+    <details style="margin-top:20px"><summary style="cursor:pointer;padding:16px">Voir la démonstration du mapping — données d’exemple, sans envoi</summary>
     <section class="stats">
       <div class="stat"><div class="stat-label">Restaurants suivis</div><div class="stat-value">12</div><div class="stat-foot">El Gallo Giro</div></div>
       <div class="stat"><div class="stat-label">Restaurant pilote</div><div class="stat-value" id="pilotName">EGG Canoga</div><div class="stat-foot">Phase 1</div></div>
@@ -268,9 +287,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       </div>
     </section>
 
+    </details>
     <section class="objective">
       <div class="target">◎</div>
-      <div><b>Objectif de la phase 1</b><br><span>Prendre une commande Artimex provenant d’un Gallo dans R365, contrôler et mapper ses lignes, l’enregistrer dans la base intermédiaire puis préparer son import dans GlobalBake Test. Une fois validé : extension aux 12 restaurants.</span></div>
+      <div><b>Objectif de la phase 1</b><br><span>Tester un CSV réel exporté depuis R365 : dépôt sur le serveur Artimex, vérification du rapport et des articles, puis import manuel dans GlobalBake par notre équipe. Valider ce parcours avant d’automatiser via l’API R365.</span></div>
     </section>
   </main>
 </div>
@@ -294,7 +314,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
         <div class="req"><strong>2. Identification des 12 locations</strong>ID R365 et nom exact de chaque El Gallo Giro.</div>
         <div class="req"><strong>3. Mapping produits</strong>SKU R365 ↔ code produit Artimex / GlobalBake.</div>
         <div class="req"><strong>4. Unités & conversions</strong>CS, EA, poids, cartons et règles de quantité.</div>
-        <div class="req"><strong>5. Base intermédiaire</strong>PO, lignes, statut d’import, erreurs et horodatage.</div>
+        <div class="req"><strong>5. Serveur Artimex</strong>PO, lignes, statut d’import, erreurs et horodatage.</div>
         <div class="req"><strong>6. Anti-doublons</strong>Clé unique par PO + restaurant + fournisseur.</div>
         <div class="req"><strong>7. GlobalBake Test</strong>Format d’import / JSON et retour de validation.</div>
         <div class="req"><strong>8. Pilote</strong>Tester un Gallo de bout en bout avant les 11 autres.</div>
@@ -454,6 +474,39 @@ document.addEventListener('keydown', e => {
   if (!document.querySelector('#modal').classList.contains('open')) return;
   if (e.key === 'Escape') closeModal();
   if (e.key === 'Tab') { e.preventDefault(); document.querySelector('#closeModal').focus(); }
+});
+const names = document.querySelector('#restaurantNames');
+for (const option of document.querySelector('#restaurantFilter').options) {
+  if (option.value !== 'all') names.appendChild(new Option(option.textContent, option.value));
+}
+document.querySelector('#uploadForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = document.querySelector('#uploadSubmit');
+  const status = document.querySelector('#uploadStatus');
+  const file = document.querySelector('#csvFile').files[0];
+  if (!file || !/\.csv$/i.test(file.name) || !file.size || file.size > 2 * 1024 * 1024) {
+    status.textContent = 'Choisissez un fichier CSV non vide de 2 Mo maximum.'; return;
+  }
+  button.disabled = true;
+  status.textContent = 'Envoi en cours… Patientez avant de fermer cette page.';
+  try {
+    const content = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = () => reject(new Error('Impossible de lire le fichier.'));
+      reader.readAsDataURL(file);
+    });
+    const response = await fetch('/api/upload', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-upload-code': document.querySelector('#uploadCode').value },
+      body: JSON.stringify({ restaurant: document.querySelector('#uploadRestaurant').value.trim(), filename: file.name, content })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Échec du dépôt.');
+    status.textContent = result.message + ' Fichier : ' + result.filename;
+    document.querySelector('#csvFile').value = '';
+    document.querySelector('#uploadCode').value = '';
+  } catch (error) { status.textContent = error.message || 'Dépôt non confirmé. Contactez Artimex avant de réessayer.'; }
+  finally { button.disabled = false; }
 });
 renderItems();
 renderOrders();
