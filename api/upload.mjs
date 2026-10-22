@@ -1,30 +1,23 @@
-import { readFileSync } from 'node:fs';
-const restaurants = JSON.parse(readFileSync(new URL('../assets/restaurants.json', import.meta.url), 'utf8'));
 import SftpClient from 'ssh2-sftp-client';
-import { createHash, timingSafeEqual, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
+import { session, verify, sameOrigin } from '../lib/auth.mjs';
+import { validate } from '../lib/csv.mjs';
+export { validate } from '../lib/csv.mjs';
 export const config = { maxDuration: 30 };
-export function validate(body) {
-  const { restaurant, filename, content } = body || {};
-  if (typeof restaurant !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9 ._-]{1,79}$/.test(restaurant)) throw Error('Indiquez le nom du restaurant (2 à 80 caractères).');
-  if (!restaurants.some(item => item.name === restaurant)) throw Error('Sélectionnez un restaurant dans la liste Artimex.');
-  if (typeof filename !== 'string' || !/\.csv$/i.test(filename) || filename.length > 180 || /[\/\\\x00-\x1f]/.test(filename)) throw Error('Sélectionnez un fichier .csv.');
-  if (typeof content !== 'string' || content.length > 2800000 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(content)) throw Error('Fichier invalide ou trop volumineux (2 Mo maximum).');
-  const bytes = Buffer.from(content, 'base64');
-  if (!bytes.length || bytes.length > 2 * 1024 * 1024 || bytes.includes(0)) throw Error('Le CSV doit être un fichier texte non vide de 2 Mo maximum.');
-  const slug = restaurant.trim().replace(/[^A-Za-z0-9_-]+/g, '-');
-  const original = filename.slice(0, -4).replace(/[^A-Za-z0-9_-]+/g, '-').slice(0, 80) || 'export';
-  return { bytes, name: `${slug}_${new Date().toISOString().replace(/[:.]/g, '-')}_${randomUUID()}_${original}.csv` };
-}
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Méthode non autorisée.' }); }
-  const expected = process.env.ARTIMEX_UPLOAD_CODE;
-  if (!expected || !process.env.ARTIMEX_SFTP_PASSWORD || !process.env.ARTIMEX_SFTP_FINGERPRINT) return res.status(503).json({ error: 'Service de dépôt non configuré. Contactez Artimex.' });
-  const provided = typeof req.headers['x-upload-code'] === 'string' ? req.headers['x-upload-code'] : '';
-  const hash = value => createHash('sha256').update(value).digest();
-  if (!timingSafeEqual(hash(provided), hash(expected))) return res.status(401).json({ error: 'Code d’accès incorrect.' });
+  if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });
+  const user = session(req);
+  if (!user) return res.status(401).json({ error: 'Votre session a expiré. Reconnectez-vous.' });
+  if (!process.env.ARTIMEX_SFTP_PASSWORD || !process.env.ARTIMEX_SFTP_FINGERPRINT) return res.status(503).json({ error: 'Service de dépôt non configuré.' });
   let file;
-  try { file = validate(req.body); } catch (error) { return res.status(400).json({ error: error.message }); }
+  try {
+    if (req.body?.restaurant && req.body.restaurant !== user.restaurant) return res.status(403).json({ error: 'Ce compte ne peut envoyer que pour son restaurant.' });
+    file = validate({ ...req.body, restaurant: user.restaurant });
+    const approval = verify(req.body?.previewToken || '');
+    if (!approval || approval.type !== 'preview' || approval.email !== user.email || approval.restaurant !== user.restaurant || approval.filename !== req.body.filename || approval.digest !== createHash('sha256').update(file.bytes).digest('hex')) return res.status(400).json({ error: 'Vérifiez l’aperçu de ce fichier avant de valider son envoi.' });
+  } catch (error) { return res.status(400).json({ error: error.message }); }
   const client = new SftpClient();
   let staged;
   try {

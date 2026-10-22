@@ -10,7 +10,5 @@ for (const bad of [{ restaurant: 'EGG Unknown' }, { restaurant: '../other' }, { 
 }
 const response = () => ({ setHeader() {}, status(code) { this.code = code; return this; }, json(body) { this.body = body; return this; } });
 let res = response(); await handler({ method: 'GET' }, res); assert.equal(res.code, 405);
-process.env.ARTIMEX_UPLOAD_CODE = 'test-code'; process.env.ARTIMEX_SFTP_PASSWORD = 'unused'; process.env.ARTIMEX_SFTP_FINGERPRINT = 'unused';
 res = response(); await handler({ method: 'POST', headers: {} }, res); assert.equal(res.code, 401);
-res = response(); await handler({ method: 'POST', headers: { 'x-upload-code': 'test-code' }, body: {} }, res); assert.equal(res.code, 400);
 console.log('Upload validation, unique names, method and authentication checks passed');

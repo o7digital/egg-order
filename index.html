@@ -11,22 +11,23 @@
 <body>
 <header><div class="header-inner"><div class="brand"><img class="logo" src="/assets/artimex-logo.webp" alt="Artimex Artisan Mexican Bakery"><span>PORTAIL RESTAURANTS</span></div><span class="badge green">Dépôt CSV · Phase pilote</span></div></header>
 <main>
+<section id="loginPanel" class="card" style="max-width:480px;margin:20px auto 50px"><div class="body"><div class="eyebrow">Espace restaurant</div><h1 style="font-size:30px">Connectez-vous</h1><p class="hint">Votre compte identifie automatiquement votre restaurant.</p><form id="loginForm"><label class="field">Adresse e-mail<input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:12px;margin-top:8px" placeholder="pacific@gallogiro.com"></label><label class="field">Mot de passe<input id="loginPassword" type="password" autocomplete="current-password" required></label><button id="loginSubmit" class="primary">Se connecter</button><p id="loginStatus" class="status" role="status"></p></form></div></section>
+<div id="portal" hidden><div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:24px"><strong id="accountName"></strong><button id="logout" type="button">Se déconnecter</button></div>
 <div class="eyebrow">El Gallo Giro → Artimex</div>
 <h1>Votre export R365,<br>prêt pour notre équipe.</h1>
-<p class="intro">Sélectionnez votre restaurant et envoyez votre fichier CSV. Artimex le reçoit sur son serveur et prend en charge son import dans GlobalBake.</p>
+<p class="intro">Connectez-vous à votre espace restaurant et envoyez votre fichier CSV. Artimex le reçoit sur son serveur et prend en charge son import dans GlobalBake.</p>
 <div class="steps" aria-label="Étapes du dépôt">
 <div class="step"><span class="number">1</span><div><strong>Exportez depuis R365</strong><p>Enregistrez le document au format .csv.</p></div></div>
-<div class="step"><span class="number">2</span><div><strong>Envoyez votre fichier</strong><p>Choisissez le restaurant et déposez le CSV ici.</p></div></div>
+<div class="step"><span class="number">2</span><div><strong>Envoyez votre fichier</strong><p>Prévisualisez votre CSV puis validez son envoi.</p></div></div>
 <div class="step"><span class="number">3</span><div><strong>Artimex prend le relais</strong><p>Notre équipe vérifie et importe dans GlobalBake.</p></div></div>
 </div>
 <div class="grid">
 <section class="card"><div class="card-head"><h2>Envoyer un fichier CSV</h2><span class="badge">Méthode 1 · Export manuel</span></div><div class="body">
 <form id="uploadForm">
-<label class="field" for="uploadRestaurant">Restaurant<select id="uploadRestaurant" required disabled><option value="">Chargement de la liste…</option></select><small>Choisissez l’établissement qui a généré ce fichier.</small></label>
-<div class="file-area"><span class="file-label">Export R365</span><label class="drop" id="dropZone"><input id="csvFile" type="file" accept=".csv,text/csv" required aria-label="Sélectionner le fichier CSV R365"><span><strong id="fileName">Glissez votre CSV ici</strong><small id="fileMeta">ou cliquez pour choisir un fichier · 2 Mo maximum</small></span></label></div>
-<label class="field" for="uploadCode">Code d’accès Artimex<input id="uploadCode" type="password" required autocomplete="off" placeholder="Votre code de dépôt"><small>Le code vous est communiqué par l’équipe Artimex.</small></label>
+<div class="destination"><strong id="restaurantLabel"></strong><span>Votre restaurant est associé à votre compte.</span></div><div class="file-area"><span class="file-label">Export R365</span><label class="drop" id="dropZone"><input id="csvFile" type="file" accept=".csv,text/csv" required aria-label="Sélectionner le fichier CSV R365"><span><strong id="fileName">Glissez votre CSV ici</strong><small id="fileMeta">ou cliquez pour choisir un fichier · 2 Mo maximum</small></span></label></div>
 <div class="destination"><strong id="destinationName">Destination : serveur Artimex</strong><span id="filenamePreview">Le fichier sera identifié au nom de votre restaurant.</span><br><span class="hint">Le contenu du CSV est conservé à l’identique.</span></div>
-<button class="primary" id="uploadSubmit" disabled>Envoyer le CSV à Artimex →</button>
+<button class="primary" id="uploadSubmit" disabled>Afficher l’aperçu du CSV →</button>
+<section id="previewPanel" hidden style="margin-top:24px"><h2>Vérifiez votre fichier</h2><p id="previewSummary" class="hint"></p><div style="overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:8px"><table id="previewTable" style="border-collapse:collapse;width:100%;font-size:13px"></table></div><p class="hint" style="margin-top:12px">Aperçu des 20 premières lignes. Vérifiez le restaurant et les données avant l’envoi. Aucune validation métier GlobalBake n’est effectuée ici.</p><label style="display:block;margin:16px 0"><input id="confirmData" type="checkbox"> Je confirme le restaurant et le fichier à envoyer.</label><button id="confirmUpload" type="button" class="primary" disabled>Valider et envoyer au serveur Artimex</button></section>
 <div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
 </form>
 </div></section>
@@ -37,66 +38,73 @@
 </div>
 <details class="card directory" open><summary>Annuaire des restaurants · <span id="restaurantCount">…</span> établissements référencés</summary><div id="restaurantDirectory" class="directory-grid"></div></details>
 <p class="footnote">Phase pilote : le rapport R365 et le format attendu par GlobalBake restent à valider avec un premier export réel. Si votre restaurant manque dans la liste, contactez Artimex.</p>
-</main>
+</div></main>
 <footer><span>Artimex · Portail de dépôt El Gallo Giro</span><span>R365 / CSV / GlobalBake</span></footer>
 <script>
-const form = document.querySelector('#uploadForm');
-const restaurant = document.querySelector('#uploadRestaurant');
-const fileInput = document.querySelector('#csvFile');
-const button = document.querySelector('#uploadSubmit');
-const status = document.querySelector('#uploadStatus');
-let restaurants = [];
-let pending = false;
-function updatePreview() {
-  const file = fileInput.files[0];
-  document.querySelector('#fileName').textContent = file ? file.name : 'Glissez votre CSV ici';
-  document.querySelector('#fileMeta').textContent = file ? (file.size / 1024).toFixed(1) + ' Ko · CSV R365' : 'ou cliquez pour choisir un fichier · 2 Mo maximum';
-  document.querySelector('#destinationName').textContent = restaurant.value ? restaurant.value + ' → serveur Artimex' : 'Destination : serveur Artimex';
-  document.querySelector('#filenamePreview').textContent = restaurant.value && file ? 'Nom de dépôt : ' + restaurant.value.replace(/[^A-Za-z0-9_-]+/g, '-') + '_date_identifiant_' + file.name : 'Le fichier sera identifié au nom de votre restaurant.';
+const $ = selector => document.querySelector(selector);
+let account = null, selected = null, previewToken = null, busy = false;
+function status(message, kind = '') { $('#uploadStatus').textContent = message; $('#uploadStatus').className = 'status ' + kind; }
+async function api(path, body, method = 'POST') {
+  const response = await fetch('/api/' + path, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
+  const data = await response.json();
+  if (!response.ok) { if (response.status === 401 && path !== 'session') showAccount(null); throw Error(data.error || 'Service indisponible.'); }
+  return data;
 }
-fetch('/assets/restaurants.json').then(response => {
-  if (!response.ok) throw Error('Liste indisponible');
-  return response.json();
-}).then(list => {
-  restaurants = list;
-  restaurant.replaceChildren(new Option('Sélectionnez votre restaurant', ''));
-  for (const item of list) {
-    restaurant.add(new Option(item.name, item.name));
-    const card = document.createElement('div'); card.className = 'restaurant';
-    const name = document.createElement('strong'); name.textContent = item.name;
-    const info = document.createElement('small'); info.textContent = 'El Gallo Giro';
-    card.append(name, info); document.querySelector('#restaurantDirectory').append(card);
-  }
-  document.querySelector('#restaurantCount').textContent = list.length;
-  restaurant.disabled = false; button.disabled = false;
-}).catch(() => { restaurant.replaceChildren(new Option('Liste indisponible', '')); status.className = 'status error'; status.textContent = 'Impossible de charger les restaurants. Rechargez la page ou contactez Artimex.'; });
-restaurant.addEventListener('change', updatePreview);
-fileInput.addEventListener('change', () => { updatePreview(); if (!pending) { status.textContent = ''; status.className = 'status'; } });
-const drop = document.querySelector('#dropZone');
-for (const eventName of ['dragenter', 'dragover']) drop.addEventListener(eventName, () => drop.classList.add('drag'));
-for (const eventName of ['dragleave', 'drop']) drop.addEventListener(eventName, () => drop.classList.remove('drag'));
-form.addEventListener('submit', async event => {
-  event.preventDefault(); if (pending) return;
-  const file = fileInput.files[0];
-  status.className = 'status';
-  if (!restaurants.some(item => item.name === restaurant.value) || !file || !/\.csv$/i.test(file.name) || !file.size || file.size > 2 * 1024 * 1024) {
-    status.className = 'status error'; status.textContent = 'Choisissez un restaurant et un CSV non vide de 2 Mo maximum.'; return;
-  }
-  pending = true; button.disabled = true; restaurant.disabled = true; fileInput.disabled = true;
-  button.textContent = 'Envoi en cours…'; status.textContent = 'Transfert vers Artimex. Patientez avant de fermer la page.';
+function clearPreview() { selected = null; previewToken = null; $('#previewPanel').hidden = true; $('#confirmData').checked = false; $('#confirmUpload').disabled = true; }
+function showAccount(user) {
+  account = user; $('#loginPanel').hidden = !!user; $('#portal').hidden = !user; clearPreview();
+  if (user) { $('#accountName').textContent = user.restaurant + ' · ' + user.email; $('#restaurantLabel').textContent = user.restaurant; $('#destinationName').textContent = user.restaurant + ' → serveur Artimex'; $('#uploadSubmit').disabled = false; }
+  else { $('#csvFile').value = ''; status(''); }
+}
+$('#loginForm').addEventListener('submit', async event => {
+  event.preventDefault(); $('#loginSubmit').disabled = true; $('#loginStatus').textContent = 'Connexion…';
+  try { showAccount(await api('session', { email: $('#loginEmail').value, password: $('#loginPassword').value })); $('#loginPassword').value = ''; $('#loginStatus').textContent = ''; }
+  catch (error) { $('#loginStatus').textContent = error.message; }
+  finally { $('#loginSubmit').disabled = false; }
+});
+$('#logout').addEventListener('click', async () => { try { await api('session', null, 'DELETE'); showAccount(null); } catch { status('Déconnexion impossible. Réessayez.', 'error'); } });
+api('session', null, 'GET').then(showAccount).catch(() => showAccount(null));
+fetch('/assets/restaurants.json').then(r => r.json()).then(list => {
+  $('#restaurantCount').textContent = list.length;
+  for (const item of list) { const card = document.createElement('div'); card.className = 'restaurant'; card.textContent = item.name; $('#restaurantDirectory').append(card); }
+}).catch(() => { $('#restaurantCount').textContent = 'Liste indisponible'; });
+$('#csvFile').addEventListener('change', () => {
+  clearPreview(); status(''); const file = $('#csvFile').files[0];
+  $('#fileName').textContent = file ? file.name : 'Glissez votre CSV ici';
+  $('#fileMeta').textContent = file ? (file.size / 1024).toFixed(1) + ' Ko · CSV R365' : 'ou cliquez pour choisir un fichier · 2 Mo maximum';
+});
+$('#uploadForm').addEventListener('submit', async event => {
+  event.preventDefault(); if (busy) return; clearPreview();
+  const file = $('#csvFile').files[0];
+  if (!file || !/\.csv$/i.test(file.name) || !file.size || file.size > 2 * 1024 * 1024) { status('Choisissez un CSV non vide de 2 Mo maximum.', 'error'); return; }
+  busy = true; $('#uploadSubmit').disabled = true; $('#csvFile').disabled = true; status('Préparation de l’aperçu. Aucun fichier n’est envoyé au FTP à cette étape.');
   try {
-    const content = await new Promise((resolve, reject) => {
-      const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = () => reject(Error('Impossible de lire le fichier.')); reader.readAsDataURL(file);
-    });
-    const response = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-upload-code': document.querySelector('#uploadCode').value }, body: JSON.stringify({ restaurant: restaurant.value, filename: file.name, content }) });
-    const result = await response.json();
-    if (!response.ok) throw Error(result.error || 'Le dépôt n’a pas pu être confirmé.');
-    status.className = 'status success'; status.textContent = result.message + ' Fichier reçu : ' + result.filename;
-    fileInput.value = ''; document.querySelector('#uploadCode').value = ''; updatePreview();
-  } catch (error) { status.className = 'status error'; status.textContent = error.message + ' En cas de doute, contactez Artimex avant de renvoyer le fichier.'; }
-  finally { pending = false; button.disabled = false; restaurant.disabled = false; fileInput.disabled = false; button.textContent = 'Envoyer le CSV à Artimex →'; }
+    const content = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = () => reject(Error('Lecture du fichier impossible.')); reader.readAsDataURL(file); });
+    const payload = { filename: file.name, content };
+    const data = await api('preview', payload); selected = payload; previewToken = data.previewToken;
+    $('#previewSummary').textContent = data.restaurant + ' · ' + data.filename + ' · ' + data.rowCount + ' lignes de données · ' + data.headers.length + ' colonnes';
+    const table = $('#previewTable'); table.replaceChildren();
+    const head = document.createElement('thead'), body = document.createElement('tbody');
+    for (const [index, row] of [data.headers, ...data.rows].entries()) {
+      const tr = document.createElement('tr');
+      for (const value of row) { const cell = document.createElement(index === 0 ? 'th' : 'td'); cell.textContent = value; cell.style.cssText = 'text-align:left;padding:10px;border-bottom:1px solid #e6ded2;white-space:pre-wrap;min-width:90px;max-width:300px;overflow-wrap:anywhere'; tr.append(cell); }
+      (index === 0 ? head : body).append(tr);
+    }
+    table.append(head, body); $('#previewPanel').hidden = false; status('Aperçu prêt. Vérifiez les informations puis validez l’envoi.');
+  } catch (error) { status(error.message, 'error'); }
+  finally { busy = false; $('#uploadSubmit').disabled = false; $('#csvFile').disabled = false; }
+});
+$('#confirmData').addEventListener('change', () => { $('#confirmUpload').disabled = !$('#confirmData').checked || busy || !previewToken; });
+$('#confirmUpload').addEventListener('click', async () => {
+  if (busy || !selected || !previewToken || !$('#confirmData').checked) return;
+  busy = true; $('#confirmUpload').disabled = true; $('#uploadSubmit').disabled = true; $('#csvFile').disabled = true; $('#confirmData').disabled = true;
+  status('Envoi du CSV validé vers le serveur Artimex…');
+  try {
+    const data = await api('upload', { ...selected, previewToken });
+    clearPreview(); $('#csvFile').value = ''; $('#fileName').textContent = 'Glissez votre CSV ici'; $('#fileMeta').textContent = 'ou cliquez pour choisir un fichier · 2 Mo maximum';
+    status(data.message + ' Fichier reçu : ' + data.filename, 'success');
+  } catch (error) { status(error.message + ' En cas de doute, contactez Artimex avant de renvoyer le fichier.', 'error'); }
+  finally { busy = false; $('#uploadSubmit').disabled = false; $('#csvFile').disabled = false; $('#confirmData').disabled = false; $('#confirmUpload').disabled = !previewToken || !$('#confirmData').checked; }
 });
 </script>
-</body>
-</html>
+</body></html>

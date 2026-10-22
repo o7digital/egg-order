@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/check.mjs && node scripts/upload-check.mjs",
+    "test": "node scripts/check.mjs && node scripts/upload-check.mjs && node scripts/auth-check.mjs",
     "dev": "npx serve ."
   },
   "dependencies": {
+    "papaparse": "^5.7.0",
     "ssh2-sftp-client": "^12.1.1"
   }
 }

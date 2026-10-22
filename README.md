@@ -1,17 +1,15 @@
-# Artimex CSV intake
+# Artimex restaurant portal
 
 Production: https://r365-gb-order-seven.vercel.app/
 
-Restaurants export a CSV from R365, enter their restaurant name and access code, and upload it. The server transfers the original bytes via pinned-key SFTP to `/incoming` on the Artimex server. Final filenames contain the restaurant, UTC timestamp, unique ID and original basename. Uploads use `.part` then rename to `.csv`. Artimex staff import the CSV into GlobalBake manually. API retrieval from R365 is not implemented; determine the correct report and validate an actual import first.
+Pilot account: pacific@gallogiro.com, bound server-side to EGG Pacific. Credentials are provisioned privately; no mail is sent. The password is not stored in source or exposed to the browser. Other restaurant directory entries do not yet have accounts.
 
-Required production secrets: `ARTIMEX_UPLOAD_CODE`, `ARTIMEX_SFTP_PASSWORD`, `ARTIMEX_SFTP_FINGERPRINT`. Credentials never go to the browser. The shared pilot access code must be supplied separately to restaurant staff. Each upload is independent; repeated submission can create another file, so staff must verify the order before importing into GB.
+Flow: login → choose CSV → server-generated preview of up to 20 rows → explicit confirmation → SFTP upload to Artimex `/incoming` → manual or separately configured GB import. Preview does not write to FTP. A signed preview token binds the user, restaurant, filename and exact file bytes for 15 minutes. Sessions use a signed Secure HttpOnly SameSite cookie with an eight-hour lifetime. Changing files requires a new preview. UTF-8 CSV with a header and consistent columns is required; 2 MiB maximum. Original file bytes are preserved.
 
-`npm ci`, `npm test`, `npm run build`. Deploy with `vercel --prod` against the existing linked project. The optional mapping demo contains sample data only.
+Required production secrets: ARTIMEX_PORTAL_USERS (JSON array of email, restaurant, scrypt salt/hash), ARTIMEX_SESSION_SECRET, ARTIMEX_SFTP_PASSWORD, ARTIMEX_SFTP_FINGERPRINT. The former shared upload code is no longer accepted. Provision accounts with scrypt N=16384,r=8,p=1,64 bytes. Remove/rotate a user to revoke access. No public registration or email workflow.
 
-## Restaurant directory
+Shared server verified: VPS1 51.178.36.17 / mail.o7digitalgroup.com. FTP artimex-ftp at 5.39.3.225:21 and website SFTP share `/srv/artimex`; client `/incoming` corresponds to `/srv/artimex/incoming`. Older reports called this machine VPS2. VPS2 today is 92.222.23.247.
 
-`assets/restaurants.json` is the shared source for the portal select, directory and server validation. Ten names originate from the existing R365 order mockup; the complete list and R365/GB location identifiers still need client confirmation. Other project seed lists disagree, so no extra names or identifiers have been invented.
+The site confirms receipt on Artimex, not import into GlobalBake. GB runs in a remote Windows environment; scheduling its importer and fetching files to that Windows environment are outside this repository. The Windows host must remain available; whether an interactive session is needed depends on GB. R365 API retrieval is not implemented.
 
-## Shared server
-
-Verified on VPS2: both the `artimex-ftp` service (5.39.3.225, port 21) and the SFTP accounts use `/srv/artimex` as their client root. Website uploads go to `/incoming`, physically `/srv/artimex/incoming`. Compare the host and folder saved in GlobalBake to confirm that it reads this same folder; GB application settings are not accessible from this repository. Website transfer uses SFTP to mail.o7digitalgroup.com / 51.178.36.17, port 22.
+`assets/restaurants.json` contains the ten restaurant names approved for the pilot. `npm ci`, `npm test`, `npm run build`, then `vercel --prod` against the existing linked project. Repeated confirmed submissions can create duplicate files; staff must verify orders before import.
