@@ -17,7 +17,7 @@ assert(restaurants.length >= 10);
 const logo = await readFile('assets/artimex-logo.webp');
 assert.equal(logo.subarray(0, 4).toString(), 'RIFF');
 assert.equal(logo.subarray(8, 12).toString(), 'WEBP');
-assert(html.includes('<title>Artimex — Portail restaurants</title>'));
+assert(html.includes('<title>Artimex — Restaurant Portal</title>'));
 assert(html.includes('id="restaurantDirectory"'));
 assert(html.includes('src="/assets/artimex-logo.webp"'));
 const favicon = await readFile('assets/artimex-favicon.svg', 'utf8');

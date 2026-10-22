@@ -22,3 +22,8 @@ r = res(); preview({ method: 'POST', headers, body: { ...body, content: Buffer.f
 r = res(); preview({ method: 'POST', headers: {}, body }, r); assert.equal(r.code, 401);
 r = res(); login({ method: 'POST', headers: { origin: 'https://attacker.example', host: 'portal.example' }, body: {} }, r); assert.equal(r.code, 403);
 console.log('Pacific login, session integrity, CSV parsing, preview validation and restaurant isolation passed');
+
+r = res(); login({ method: 'POST', headers: { 'x-portal-language': 'es' }, body: { email: 'pacific@gallogiro.com', password: 'wrong' } }, r); assert.equal(r.body.error, 'Correo electrónico o contraseña incorrectos.'); assert.equal(r.headers['Content-Language'], 'es');
+r = res(); login({ method: 'POST', headers: { 'x-portal-language': 'en' }, body: { email: 'pacific@gallogiro.com', password: 'wrong' } }, r); assert.equal(r.body.error, 'Incorrect email address or password.');
+r = res(); preview({ method: 'POST', headers: { ...headers, 'x-portal-language': 'es' }, body: { ...body, content: Buffer.from('SKU,Qty\n"broken').toString('base64') } }, r); assert.equal(r.code, 400); assert.match(r.body.error, /^CSV ilegible/);
+console.log('English and Spanish authentication and CSV error responses passed');

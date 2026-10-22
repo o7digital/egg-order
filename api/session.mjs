@@ -1,5 +1,7 @@
+import { localizeResponse } from '../lib/locale.mjs';
 import { users, session, sign, checkPassword, publicUser, sameOrigin } from '../lib/auth.mjs';
 export default function handler(req, res) {
+  localizeResponse(req, res);
   res.setHeader('Cache-Control', 'no-store');
   if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });
   if (req.method === 'GET') {

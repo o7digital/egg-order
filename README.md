@@ -13,3 +13,7 @@ Shared server verified: VPS1 51.178.36.17 / mail.o7digitalgroup.com. FTP artimex
 The site confirms receipt on Artimex, not import into GlobalBake. GB runs in a remote Windows environment; scheduling its importer and fetching files to that Windows environment are outside this repository. The Windows host must remain available; whether an interactive session is needed depends on GB. R365 API retrieval is not implemented.
 
 `assets/restaurants.json` contains the ten restaurant names approved for the pilot. `npm ci`, `npm test`, `npm run build`, then `vercel --prod` against the existing linked project. Repeated confirmed submissions can create duplicate files; staff must verify orders before import.
+
+## Languages
+
+The portal defaults to US English and offers Spanish via the header selector. The choice persists in browser localStorage. API error/receipt messages follow the selected language. Restaurant names and original CSV cells are not translated.

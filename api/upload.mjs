@@ -1,3 +1,4 @@
+import { localizeResponse } from '../lib/locale.mjs';
 import SftpClient from 'ssh2-sftp-client';
 import { createHash } from 'node:crypto';
 import { session, verify, sameOrigin } from '../lib/auth.mjs';
@@ -5,6 +6,7 @@ import { validate } from '../lib/csv.mjs';
 export { validate } from '../lib/csv.mjs';
 export const config = { maxDuration: 30 };
 export default async function handler(req, res) {
+  localizeResponse(req, res);
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Méthode non autorisée.' }); }
   if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });

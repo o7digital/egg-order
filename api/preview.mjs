@@ -1,8 +1,10 @@
+import { localizeResponse } from '../lib/locale.mjs';
 import Papa from 'papaparse';
 import { createHash } from 'node:crypto';
 import { session, sign, publicUser, sameOrigin } from '../lib/auth.mjs';
 import { validate } from '../lib/csv.mjs';
 export default function handler(req, res) {
+  localizeResponse(req, res);
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Méthode non autorisée.' }); }
   if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });

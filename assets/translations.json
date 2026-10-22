@@ -1,0 +1,346 @@
+{
+  "PORTAIL RESTAURANTS": {
+    "en": "RESTAURANT PORTAL",
+    "es": "PORTAL DE RESTAURANTES"
+  },
+  "Dépôt CSV · Phase pilote": {
+    "en": "CSV upload · Pilot phase",
+    "es": "Carga de CSV · Fase piloto"
+  },
+  "Espace restaurant": {
+    "en": "Restaurant access",
+    "es": "Acceso del restaurante"
+  },
+  "Connectez-vous": {
+    "en": "Sign in",
+    "es": "Iniciar sesión"
+  },
+  "Votre compte identifie automatiquement votre restaurant.": {
+    "en": "Your account automatically identifies your restaurant.",
+    "es": "Su cuenta identifica automáticamente su restaurante."
+  },
+  "Adresse e-mail": {
+    "en": "Email address",
+    "es": "Correo electrónico"
+  },
+  "Mot de passe": {
+    "en": "Password",
+    "es": "Contraseña"
+  },
+  "Se connecter": {
+    "en": "Sign in",
+    "es": "Iniciar sesión"
+  },
+  "Se déconnecter": {
+    "en": "Sign out",
+    "es": "Cerrar sesión"
+  },
+  "Votre export R365,": {
+    "en": "Your R365 export,",
+    "es": "Su archivo de R365,"
+  },
+  "prêt pour notre équipe.": {
+    "en": "ready for our team.",
+    "es": "listo para nuestro equipo."
+  },
+  "Connectez-vous à votre espace restaurant et envoyez votre fichier CSV. Artimex le reçoit sur son serveur et prend en charge son import dans GlobalBake.": {
+    "en": "Sign in to your restaurant account and upload your CSV. Artimex receives it on its server and handles the GlobalBake import.",
+    "es": "Inicie sesión en su cuenta y cargue su CSV. Artimex lo recibe en su servidor y se encarga de la importación a GlobalBake."
+  },
+  "Étapes du dépôt": {
+    "en": "Upload steps",
+    "es": "Pasos de la carga"
+  },
+  "Exportez depuis R365": {
+    "en": "Export from R365",
+    "es": "Exporte desde R365"
+  },
+  "Enregistrez le document au format .csv.": {
+    "en": "Save the document as a .csv file.",
+    "es": "Guarde el documento como archivo .csv."
+  },
+  "Envoyez votre fichier": {
+    "en": "Upload your file",
+    "es": "Cargue su archivo"
+  },
+  "Prévisualisez votre CSV puis validez son envoi.": {
+    "en": "Preview your CSV, then confirm the upload.",
+    "es": "Revise la vista previa del CSV y confirme el envío."
+  },
+  "Artimex prend le relais": {
+    "en": "Artimex takes it from here",
+    "es": "Artimex se encarga del resto"
+  },
+  "Notre équipe vérifie et importe dans GlobalBake.": {
+    "en": "Our team reviews and imports into GlobalBake.",
+    "es": "Nuestro equipo revisa e importa a GlobalBake."
+  },
+  "Envoyer un fichier CSV": {
+    "en": "Upload a CSV file",
+    "es": "Cargar un archivo CSV"
+  },
+  "Méthode 1 · Export manuel": {
+    "en": "Option 1 · Manual export",
+    "es": "Opción 1 · Exportación manual"
+  },
+  "Votre restaurant est associé à votre compte.": {
+    "en": "Your restaurant is linked to your account.",
+    "es": "Su restaurante está vinculado a su cuenta."
+  },
+  "Export R365": {
+    "en": "R365 export",
+    "es": "Exportación de R365"
+  },
+  "Sélectionner le fichier CSV R365": {
+    "en": "Select the R365 CSV file",
+    "es": "Seleccione el archivo CSV de R365"
+  },
+  "Glissez votre CSV ici": {
+    "en": "Drop your CSV here",
+    "es": "Arrastre su CSV aquí"
+  },
+  "ou cliquez pour choisir un fichier · 2 Mo maximum": {
+    "en": "or click to choose a file · 2 MB maximum",
+    "es": "o haga clic para seleccionar un archivo · Máximo 2 MB"
+  },
+  "Destination : serveur Artimex": {
+    "en": "Destination: Artimex server",
+    "es": "Destino: servidor de Artimex"
+  },
+  "Le fichier sera identifié au nom de votre restaurant.": {
+    "en": "The filename will identify your restaurant.",
+    "es": "El nombre del archivo identificará su restaurante."
+  },
+  "Le contenu du CSV est conservé à l’identique.": {
+    "en": "The original CSV content is preserved.",
+    "es": "Se conserva el contenido original del CSV."
+  },
+  "Afficher l’aperçu du CSV →": {
+    "en": "Preview CSV →",
+    "es": "Ver vista previa del CSV →"
+  },
+  "Vérifiez votre fichier": {
+    "en": "Review your file",
+    "es": "Revise su archivo"
+  },
+  "Aperçu des 20 premières lignes. Vérifiez le restaurant et les données avant l’envoi. Aucune validation métier GlobalBake n’est effectuée ici.": {
+    "en": "Preview of the first 20 rows. Check the restaurant and data before uploading. GlobalBake business rules are not validated here.",
+    "es": "Vista previa de las primeras 20 filas. Revise el restaurante y los datos antes de enviar. Aquí no se validan las reglas de negocio de GlobalBake."
+  },
+  "Je confirme le restaurant et le fichier à envoyer.": {
+    "en": "I confirm the restaurant and the file to upload.",
+    "es": "Confirmo el restaurante y el archivo que se enviará."
+  },
+  "Valider et envoyer au serveur Artimex": {
+    "en": "Confirm and upload to Artimex",
+    "es": "Confirmar y enviar a Artimex"
+  },
+  "Après votre envoi": {
+    "en": "After your upload",
+    "es": "Después del envío"
+  },
+  "Un seul dépôt,": {
+    "en": "One upload,",
+    "es": "Una sola carga,"
+  },
+  "un parcours clair.": {
+    "en": "a clear path.",
+    "es": "un proceso claro."
+  },
+  "Votre restaurant": {
+    "en": "Your restaurant",
+    "es": "Su restaurante"
+  },
+  "Export CSV depuis Restaurant365": {
+    "en": "CSV export from Restaurant365",
+    "es": "Exportación CSV desde Restaurant365"
+  },
+  "Serveur de dépôt Artimex": {
+    "en": "Artimex upload server",
+    "es": "Servidor de carga de Artimex"
+  },
+  "Réception dans le dossier partagé": {
+    "en": "Received in the shared folder",
+    "es": "Recepción en la carpeta compartida"
+  },
+  "Équipe Artimex → GlobalBake": {
+    "en": "Artimex team → GlobalBake",
+    "es": "Equipo Artimex → GlobalBake"
+  },
+  "Vérification et import par notre équipe": {
+    "en": "Review and import by our team",
+    "es": "Revisión e importación por nuestro equipo"
+  },
+  "La confirmation atteste la réception du fichier sur le serveur. Elle ne signifie pas que la commande a déjà été importée dans GlobalBake.": {
+    "en": "Confirmation means the server received your file. It does not mean the order has already been imported into GlobalBake.",
+    "es": "La confirmación indica que el servidor recibió su archivo. No significa que el pedido ya se haya importado a GlobalBake."
+  },
+  "Méthode 2 · À venir": {
+    "en": "Option 2 · Coming soon",
+    "es": "Opción 2 · Próximamente"
+  },
+  "Récupération automatique R365": {
+    "en": "Automatic R365 retrieval",
+    "es": "Recuperación automática de R365"
+  },
+  "Avec la clé API, notre système récupérera les données et déposera le CSV au nom du restaurant.": {
+    "en": "Using the API key, our system will retrieve the data and upload the CSV under the restaurant name.",
+    "es": "Con la clave API, nuestro sistema recuperará los datos y cargará el CSV con el nombre del restaurante."
+  },
+  "Nous validons d’abord le bon rapport et l’import GlobalBake avec la méthode manuelle.": {
+    "en": "First, we are validating the correct report and GlobalBake import using the manual method.",
+    "es": "Primero validamos el informe correcto y la importación a GlobalBake mediante el método manual."
+  },
+  "Annuaire des restaurants ·": {
+    "en": "Restaurant directory ·",
+    "es": "Directorio de restaurantes ·"
+  },
+  "établissements référencés": {
+    "en": "listed locations",
+    "es": "restaurantes registrados"
+  },
+  "Phase pilote : le rapport R365 et le format attendu par GlobalBake restent à valider avec un premier export réel. Si votre restaurant manque dans la liste, contactez Artimex.": {
+    "en": "Pilot phase: the R365 report and GlobalBake format still need validation with a real export. If your restaurant is missing, contact Artimex.",
+    "es": "Fase piloto: el informe de R365 y el formato de GlobalBake aún deben validarse con una exportación real. Si falta su restaurante, contacte a Artimex."
+  },
+  "Artimex · Portail de dépôt El Gallo Giro": {
+    "en": "Artimex · El Gallo Giro upload portal",
+    "es": "Artimex · Portal de carga de El Gallo Giro"
+  },
+  "Service indisponible.": {
+    "en": "Service unavailable.",
+    "es": "Servicio no disponible."
+  },
+  "→ serveur Artimex": {
+    "en": "→ Artimex server",
+    "es": "→ Servidor de Artimex"
+  },
+  "Connexion…": {
+    "en": "Signing in…",
+    "es": "Iniciando sesión…"
+  },
+  "Déconnexion impossible. Réessayez.": {
+    "en": "Unable to sign out. Please try again.",
+    "es": "No se pudo cerrar la sesión. Inténtelo de nuevo."
+  },
+  "Liste indisponible": {
+    "en": "Directory unavailable",
+    "es": "Directorio no disponible"
+  },
+  "Ko · CSV R365": {
+    "en": "KB · R365 CSV",
+    "es": "KB · CSV de R365"
+  },
+  "Choisissez un CSV non vide de 2 Mo maximum.": {
+    "en": "Choose a non-empty CSV file up to 2 MB.",
+    "es": "Seleccione un CSV con contenido de hasta 2 MB."
+  },
+  "Préparation de l’aperçu. Aucun fichier n’est envoyé au FTP à cette étape.": {
+    "en": "Preparing preview. No file is sent to FTP at this stage.",
+    "es": "Preparando la vista previa. En este paso no se envía ningún archivo al FTP."
+  },
+  "Lecture du fichier impossible.": {
+    "en": "Unable to read the file.",
+    "es": "No se pudo leer el archivo."
+  },
+  "lignes de données": {
+    "en": "data rows",
+    "es": "filas de datos"
+  },
+  "colonnes": {
+    "en": "columns",
+    "es": "columnas"
+  },
+  "Aperçu prêt. Vérifiez les informations puis validez l’envoi.": {
+    "en": "Preview ready. Review the information, then confirm the upload.",
+    "es": "Vista previa lista. Revise la información y confirme el envío."
+  },
+  "Envoi du CSV validé vers le serveur Artimex…": {
+    "en": "Uploading your confirmed CSV to Artimex…",
+    "es": "Enviando el CSV confirmado a Artimex…"
+  },
+  "Fichier reçu :": {
+    "en": "File received:",
+    "es": "Archivo recibido:"
+  },
+  "En cas de doute, contactez Artimex avant de renvoyer le fichier.": {
+    "en": "If in doubt, contact Artimex before uploading again.",
+    "es": "Si tiene dudas, contacte a Artimex antes de volver a enviar el archivo."
+  },
+  "Origine non autorisée.": {
+    "en": "Request origin not allowed.",
+    "es": "Origen de solicitud no permitido."
+  },
+  "Connectez-vous à votre compte restaurant.": {
+    "en": "Sign in to your restaurant account.",
+    "es": "Inicie sesión en su cuenta de restaurante."
+  },
+  "Méthode non autorisée.": {
+    "en": "Method not allowed.",
+    "es": "Método no permitido."
+  },
+  "Connexion non configurée.": {
+    "en": "Sign-in is not configured. Contact Artimex.",
+    "es": "El acceso no está configurado. Contacte a Artimex."
+  },
+  "Adresse e-mail ou mot de passe incorrect.": {
+    "en": "Incorrect email address or password.",
+    "es": "Correo electrónico o contraseña incorrectos."
+  },
+  "Votre session a expiré. Reconnectez-vous.": {
+    "en": "Your session has expired. Please sign in again.",
+    "es": "Su sesión ha caducado. Inicie sesión de nuevo."
+  },
+  "Service de dépôt non configuré.": {
+    "en": "Upload service is not configured. Contact Artimex.",
+    "es": "El servicio de carga no está configurado. Contacte a Artimex."
+  },
+  "Ce compte ne peut envoyer que pour son restaurant.": {
+    "en": "This account can only upload for its own restaurant.",
+    "es": "Esta cuenta solo puede enviar archivos para su restaurante."
+  },
+  "Vérifiez l’aperçu de ce fichier avant de valider son envoi.": {
+    "en": "Review this file’s preview before confirming the upload.",
+    "es": "Revise la vista previa de este archivo antes de confirmar el envío."
+  },
+  "CSV déposé sur le serveur Artimex. Import dans GlobalBake à effectuer par notre équipe.": {
+    "en": "CSV received on the Artimex server. GlobalBake import is pending.",
+    "es": "CSV recibido en el servidor de Artimex. La importación a GlobalBake está pendiente."
+  },
+  "Le dépôt n’a pas pu être confirmé. Contactez Artimex avant de renvoyer le fichier.": {
+    "en": "The upload could not be confirmed. Contact Artimex before uploading again.",
+    "es": "No se pudo confirmar la carga. Contacte a Artimex antes de volver a enviar el archivo."
+  },
+  "Indiquez le nom du restaurant (2 à 80 caractères).": {
+    "en": "Enter a restaurant name (2–80 characters).",
+    "es": "Ingrese el nombre del restaurante (2–80 caracteres)."
+  },
+  "Sélectionnez un restaurant dans la liste Artimex.": {
+    "en": "Select a restaurant from the Artimex directory.",
+    "es": "Seleccione un restaurante del directorio de Artimex."
+  },
+  "Sélectionnez un fichier .csv.": {
+    "en": "Select a .csv file.",
+    "es": "Seleccione un archivo .csv."
+  },
+  "Fichier invalide ou trop volumineux (2 Mo maximum).": {
+    "en": "Invalid file or file too large (2 MB maximum).",
+    "es": "Archivo no válido o demasiado grande (máximo 2 MB)."
+  },
+  "Le CSV doit être un fichier texte non vide de 2 Mo maximum.": {
+    "en": "The CSV must be a non-empty text file up to 2 MB.",
+    "es": "El CSV debe ser un archivo de texto con contenido de hasta 2 MB."
+  },
+  "CSV illisible ou colonnes incohérentes. Vérifiez l’export R365 (UTF-8, avec en-têtes et au moins une ligne).": {
+    "en": "Unreadable CSV or inconsistent columns. Check the R365 export (UTF-8, headers and at least one data row).",
+    "es": "CSV ilegible o columnas inconsistentes. Revise la exportación de R365 (UTF-8, encabezados y al menos una fila de datos)."
+  },
+  "Le fichier contient trop de colonnes (100 maximum).": {
+    "en": "The file has too many columns (100 maximum).",
+    "es": "El archivo tiene demasiadas columnas (máximo 100)."
+  },
+  "The encoded data was not valid for encoding utf-8": {
+    "en": "The CSV must use UTF-8 text encoding.",
+    "es": "El CSV debe usar la codificación de texto UTF-8."
+  }
+}
