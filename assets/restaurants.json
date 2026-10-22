@@ -1,0 +1,42 @@
+[
+  {
+    "id": "anaheim",
+    "name": "EGG Anaheim"
+  },
+  {
+    "id": "bellflower",
+    "name": "EGG Bellflower"
+  },
+  {
+    "id": "bristol",
+    "name": "EGG Bristol"
+  },
+  {
+    "id": "canoga",
+    "name": "EGG Canoga"
+  },
+  {
+    "id": "ela",
+    "name": "EGG ELA"
+  },
+  {
+    "id": "lynwood",
+    "name": "EGG Lynwood"
+  },
+  {
+    "id": "pacific",
+    "name": "EGG Pacific"
+  },
+  {
+    "id": "panorama",
+    "name": "EGG Panorama"
+  },
+  {
+    "id": "san-fernando",
+    "name": "EGG San Fernando"
+  },
+  {
+    "id": "van-nuys",
+    "name": "EGG Van Nuys"
+  }
+]
