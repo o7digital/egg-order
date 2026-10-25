@@ -1,5 +1,5 @@
 import { randomUUID, randomBytes, scryptSync } from 'node:crypto';
-import { directory } from '../lib/directory.mjs';
+import { profiles } from '../lib/profiles.mjs';
 import { command, audit } from '../lib/store.mjs';
 import { sameOrigin, checkPassword, sign, verify, publicUser } from '../lib/auth.mjs';
 const cookie=(req)=>(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('artimex_session='))?.slice(16);
@@ -16,7 +16,7 @@ export default async function handler(req,res) {
  try {
  if(req.body?.action==='change-password') {
   const data=verify(cookie(req));
-  const user=data?.type==='password_change'&&directory.find(u=>u.email===data.email);
+  const user=data?.type==='password_change'&&(await profiles()).find(u=>u.email===data.email&&u.active!==false);
   if(!user) return res.status(401).json({error:'Sign in again with your temporary password.'});
   const raw=await command('GET','portal:account:'+user.email),stored=raw&&JSON.parse(raw);
   if(!stored||!stored.mustChangePassword||stored.version!==data.version||stored.expiresAt<Date.now()) return res.status(401).json({error:'Temporary password expired or already used.'});
@@ -26,7 +26,7 @@ export default async function handler(req,res) {
   const salt=randomBytes(16).toString('hex'),version=randomUUID();
   const changed=await command('CAS','portal:account:'+user.email,raw,JSON.stringify({salt,hash:scryptSync(password,salt,64).toString('hex'),version,mustChangePassword:false}));
   if(!changed) return res.status(409).json({error:'Account already changed. Please sign in again.'});
-  await audit('password_changed',user);await audit('login',user);
+  await audit('password_changed',user);await audit('login',user,access(req));
   return issue(res,user,version);
  }
  const email=typeof req.body?.email==='string'?req.body.email.trim().toLowerCase():'';
@@ -36,11 +36,13 @@ export default async function handler(req,res) {
  const ip=String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||'unknown').split(',')[0].trim().slice(0,100);
  const ipRate=await command('INCRTTL',`portal:ip:${ip}:${window}`,660);
  if(rate>10||ipRate>100) return res.status(429).json({error:'Too many attempts. Try again in 10 minutes.'});
- const user=directory.find(u=>u.email===email),raw=user&&await command('GET','portal:account:'+email),stored=raw&&JSON.parse(raw);
+ const user=(await profiles()).find(u=>u.email===email&&u.active!==false),raw=user&&await command('GET','portal:account:'+email),stored=raw&&JSON.parse(raw);
  if(!stored||!checkPassword(req.body.password,stored)||(stored.mustChangePassword&&stored.expiresAt<Date.now())) {
-  await audit('login_failed',user||{email});return res.status(401).json({error:'Incorrect email address or password, or temporary password expired.'});
+  await audit('login_failed',user||{email},access(req));return res.status(401).json({error:'Incorrect email address or password, or temporary password expired.'});
  }
- await audit(stored.mustChangePassword?'temporary_login':'login',user);
+ await audit(stored.mustChangePassword?'temporary_login':'login',user,access(req));
  return issue(res,user,stored.version,stored.mustChangePassword);
  } catch {return res.status(503).json({error:'Account service unavailable. Contact Artimex.'});}
 }
+
+function access(req){return {ip:String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||'').split(',')[0].trim().slice(0,100),agent:String(req.headers['user-agent']||'').slice(0,240)};}

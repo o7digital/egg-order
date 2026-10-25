@@ -27,5 +27,5 @@ export default async function handler(req, res) {
     if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('preview', user, {filename:req.body.filename,rows:parsed.data.length-1});
     const previewToken = sign({ type: 'preview', ...publicUser(user), rowCount: parsed.data.length - 1, filename: req.body.filename, digest: createHash('sha256').update(file.bytes).digest('hex'), exp: Date.now() + 15 * 60 * 1000 });
     return res.status(200).json({ alerts, restaurant: user.restaurant, filename: req.body.filename, bytes: file.bytes.length, headers: parsed.data[0], rows: parsed.data.slice(1, 21), rowCount: parsed.data.length - 1, previewToken });
-  } catch (error) { if(process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('validation_error',user,{message:error.message}).catch(()=>{}); return res.status(400).json({ error: error.message }); }
+  } catch (error) { if(process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('validation_error',user,{filename:req.body?.filename,message:error.message}).catch(()=>{}); return res.status(400).json({ error: error.message }); }
 }

@@ -28,15 +28,15 @@ export default async function handler(req, res) {
   try {
     await client.connect({ host: '51.178.36.17', port: 22, username: 'artimex-depot', password: process.env.ARTIMEX_SFTP_PASSWORD, readyTimeout: 12000,
       hostVerifier: key => 'SHA256:' + createHash('sha256').update(key).digest('base64').replace(/=+$/, '') === process.env.ARTIMEX_SFTP_FINGERPRINT });
-    if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('upload_started',user,{filename:file.name});
+    if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('upload_started',user,{filename:file.name,originalFilename:req.body.filename,rows:approval.rowCount||0,bytes:file.bytes.length});
     staged = `/incoming/${file.name}.part`;
     await client.put(file.bytes, staged);
     await client.rename(staged, `/incoming/${file.name}`);
     staged = undefined;
-    if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('upload',user,{filename:file.name,rows:approval.rowCount||0,status:'deposited_import_pending'});
+    if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('upload',user,{filename:file.name,originalFilename:req.body.filename,bytes:file.bytes.length,rows:approval.rowCount||0,status:'deposited_import_pending'});
     return res.status(201).json({ filename: file.name, status: 'deposited', message: 'CSV déposé sur le serveur Artimex. Import dans GlobalBake à effectuer par notre équipe.' });
   } catch {
-    if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('upload_error',user,{filename:file.name,message:'Upload or receipt could not be confirmed; check before resubmission.'}).catch(()=>{});
+    if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('upload_error',user,{filename:file.name,originalFilename:req.body.filename,message:'Upload or receipt could not be confirmed; check before resubmission.'}).catch(()=>{});
     return res.status(502).json({ error: 'Le dépôt n’a pas pu être confirmé. Contactez Artimex avant de renvoyer le fichier.' });
   } finally {
     if (staged) await client.delete(staged, true).catch(() => {});

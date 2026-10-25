@@ -32,6 +32,18 @@ def command(args):
             if op=='INCRTTL':
                 n=int(current or 0)+1
                 db.execute('INSERT INTO kv(key,value,expires) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',(key,str(n),time.time()+int(a[1])));return n
+        if op=='MULTICAS':
+            changes=a[0]
+            if not isinstance(changes,list) or not 1<=len(changes)<=5: raise ValueError()
+            for change in changes:
+                key=change['key']
+                if not key.startswith('portal:') or len(key)>512: raise ValueError()
+                row=db.execute('SELECT value FROM kv WHERE key=?',(key,)).fetchone()
+                if (row[0] if row else None)!=change['expected']: return 0
+            for change in changes:
+                db.execute('INSERT INTO kv(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,expires=NULL',(change['key'],change['value']))
+            if len(a)>1: db.execute('INSERT INTO events(value) VALUES(?)',(a[1],))
+            return 1
         if op=='LPUSH' and a[0]=='portal:events':
             db.execute('INSERT INTO events(value) VALUES(?)',(a[1],));return 1
         if op=='LRANGE' and a[0]=='portal:events':
@@ -49,7 +61,7 @@ class Handler(BaseHTTPRequestHandler):
             args=json.loads(self.rfile.read(size))
             if not isinstance(args,list) or not 1<=len(args)<=5: raise ValueError()
             return self.reply(200,{'result':command(args)})
-        except (ValueError,TypeError,IndexError): self.reply(400,{'error':'Invalid command'})
+        except (ValueError,TypeError,IndexError,KeyError): self.reply(400,{'error':'Invalid command'})
         except Exception: self.reply(503,{'error':'Storage unavailable'})
     def log_message(self,*args): pass
 if __name__=='__main__': ThreadingHTTPServer(('0.0.0.0',int(os.environ.get('PORTAL_PORT','8080'))),Handler).serve_forever()
