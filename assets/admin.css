@@ -3,3 +3,123 @@
 
 #logout{border:1px solid #dcded4;border-radius:8px;padding:8px 14px;background:#fff;color:#4d5841;font-size:12px;cursor:pointer}.console-side .console-mark small{line-height:1.8;display:block}.console-table a.ui-btn{text-decoration:none}.console-table .console-actions{flex-wrap:nowrap}
 .console-side{min-width:0}.console-head>div:first-child{min-width:0}.console-box-head{flex-wrap:wrap}.console-box-body{min-width:0}@media(max-width:700px){.console{grid-template-columns:minmax(0,1fr)}.console-head{flex-wrap:wrap}.console-head .console-actions{justify-content:start}.console-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.console-table-wrap{max-width:100%}.console-filters label{min-width:0}.console-kpi strong{font-size:25px}.console-kpi small{font-size:10px}}
+
+/* Artimex workspace: use the screen width and keep account actions in view. */
+body.admin-mode{background:#f0f2ee;color:#28392e}
+.admin-mode header{background:#fff;border-color:#e0e6de}
+.admin-mode .header-inner{max-width:none;padding:14px 28px;min-height:90px}
+.admin-mode .logo{width:115px;max-height:70px;object-fit:contain}
+.admin-mode .brand{gap:24px}
+.admin-mode .brand span{font-size:11px;letter-spacing:.14em;color:#6f7a6e;padding-left:24px}
+.admin-mode main{width:100%;max-width:none;margin:0;padding:20px 24px 32px}
+.admin-mode #accountBar{align-items:center;margin-bottom:18px!important;min-height:35px;padding:0 5px}
+.admin-mode #accountName{font-size:12px;font-weight:500;color:#6b786b}
+.admin-mode footer{max-width:none;margin:0 24px;padding:20px 8px;color:#7c8779;border-color:#dfe5da}
+.admin-mode #uploadView{max-width:1280px;margin-inline:auto}
+.admin-mode .console{grid-template-columns:240px minmax(0,1fr);border-color:#dfe5da;border-radius:20px;box-shadow:0 16px 48px #23332608;background:linear-gradient(90deg,#26362d 240px,#fafbf8 240px);overflow:clip}
+.admin-mode .console-side{background:#26362d;padding:34px 18px 26px;gap:30px;position:sticky;top:16px;align-self:start;min-height:690px;height:calc(100vh - 180px)}
+.admin-mode .console-mark{padding:0 16px 26px;border-bottom:1px solid #ffffff16}
+.admin-mode .console-mark small{font:italic 34px/1.2 Georgia,serif;letter-spacing:-.5px;color:#efe5cf;margin-bottom:8px}
+.admin-mode .console-mark b{font-size:11px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:#bdc9bd}
+.admin-mode .console-nav{gap:8px}
+.admin-mode .console-nav button{padding:13px 14px;min-height:48px;border-radius:10px;font-size:13px;line-height:1.5;gap:13px;color:#c3d0c4;transition:background .15s,color .15s}
+.admin-mode .console-nav button[aria-current=page]{background:#e6edda;color:#283f2c;box-shadow:0 2px 5px #0000000b}
+.admin-mode .console-nav button:hover{background:#ffffff12;color:#fff}
+.admin-mode .console-nav button[aria-current=page]:hover{background:#eef3e5;color:#283f2c}
+.admin-mode .console-side-note{line-height:1.8;font-size:11px}
+.admin-mode .console-side-note strong{font-size:13px}
+.admin-mode .console-main{padding:34px 36px;container-type:inline-size}
+.admin-mode .console-head{gap:24px;margin-bottom:28px;align-items:start}
+.admin-mode .console-head h1{font-size:clamp(27px,2.1vw,38px);letter-spacing:-1.3px;color:#233b2b;margin:9px 0 10px;font-weight:650}
+.admin-mode .console-head p{font-size:14px;line-height:1.7;color:#7a8574;max-width:700px}
+.admin-mode .console-eyebrow{font-size:10px;color:#8b7952;letter-spacing:.2em}
+.admin-mode .console-actions{flex-shrink:0;gap:10px}
+.admin-mode .ui-btn,.admin-dialog .ui-btn{font-size:13px;line-height:1.4;min-height:42px;padding:11px 16px;border-radius:9px;border-color:#d9e2d4;transition:background .15s,box-shadow .15s}
+.admin-mode .ui-btn:hover,.admin-dialog .ui-btn:hover{box-shadow:0 3px 10px #32472a0a;background:#f1f5eb}
+.admin-mode .ui-btn.solid{background:#304d37;border-color:#304d37}
+.admin-mode .ui-btn.solid:hover{background:#233e2a}
+.admin-mode .console-filters{padding:18px 20px;gap:16px;border-radius:12px;border-color:#e1e7db;margin-bottom:24px}
+.admin-mode .console-filters input,.admin-mode .console-filters select{font-size:13px;padding:10px 12px;max-width:220px}
+.admin-mode .console-search{font-size:14px;padding:13px 16px;border-radius:10px;width:min(100%,420px);margin-bottom:22px;border-color:#dbe3d4;min-height:45px}
+.admin-mode .console-box{border-radius:14px;border-color:#e0e6d9;box-shadow:0 3px 12px #2d402108;margin-bottom:24px}
+.admin-mode .console-box-head{padding:22px 24px;gap:16px;align-items:center}
+.admin-mode .console-box-head h2{font-size:17px;letter-spacing:-.2px;color:#344b34}
+.admin-mode .console-box-head small{font-size:12px;color:#8a947e}
+.admin-mode .console-box-body{padding:24px}
+.admin-mode .console-table{font-size:13px}
+.admin-mode .console-table th{padding:16px 20px;font-size:10px;letter-spacing:.09em;color:#849077;background:#f6f8f1}
+.admin-mode .console-table td{padding:19px 20px;color:#53634b}
+.admin-mode .console-table td small{font-size:12px;line-height:1.6;color:#8c977e}
+.admin-mode .console-table .row-title{font-size:14px;font-weight:650;color:#314b33}
+.admin-mode .pill{font-size:11px;line-height:1.5;padding:5px 10px;letter-spacing:0;white-space:normal}
+.admin-mode .console-kpis{gap:18px;margin-bottom:26px}
+.admin-mode .console-kpi{border-radius:14px;padding:24px;border-color:#e0e6d9;box-shadow:0 3px 12px #2d402106}
+.admin-mode .console-kpi small{font-size:12px;color:#77866b}
+.admin-mode .console-kpi strong{font-size:39px;font-weight:600;color:#355233;margin:12px 0 6px;letter-spacing:-1.4px}
+.admin-mode .console-kpi span{font-size:11px;line-height:1.6;color:#939c85}
+.admin-mode .console-grid{gap:24px}
+.admin-mode .console-chart-row{grid-template-columns:115px 1fr 30px;font-size:12px;margin-bottom:14px;gap:14px}
+.admin-mode .console-track{height:9px}
+.admin-mode .console-bar,.admin-mode .console-trend-bar{background:#8b9d71}
+.admin-mode .console-trend{height:190px}
+.admin-mode .console-trend-col{font-size:11px}
+.admin-mode .console-trend-col b{font-size:12px}
+.admin-mode .console-health{padding:15px 0;font-size:13px}
+.admin-mode .console-health small{font-size:11px;line-height:1.7}
+.admin-mode .console-message{font-size:13px;line-height:1.7;border-radius:10px;padding:15px 18px}
+.admin-mode .console-note,.admin-mode .console-timestamp{font-size:12px;line-height:1.8;color:#879378}
+.account-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.account-overview>div{display:flex;align-items:center;gap:15px;background:#fff;border:1px solid #e0e6da;border-radius:12px;padding:20px 22px}
+.account-overview strong{font-size:29px;font-weight:600;color:#355433;letter-spacing:-1px}
+.account-overview span{font-size:12px;color:#7c8a70;line-height:1.5}
+.account-permission-note{border-left:3px solid #9eae85;background:#f0f5e7!important}
+.accounts-table-wrap{width:100%;overflow:visible}
+.accounts-table{table-layout:fixed;width:100%;white-space:normal}
+.account-identity-col{width:29%}.account-role-col{width:27%}.account-status-col{width:24%}.account-actions-col{width:20%}
+.admin-mode .accounts-table td{padding:22px 20px;vertical-align:middle}
+.account-person{display:flex;align-items:center;gap:14px;min-width:0}
+.account-person>div{min-width:0}
+.account-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;flex-shrink:0;font-size:12px;font-weight:650;letter-spacing:.03em;color:#6f7f55;background:#eff3e7;border:1px solid #e6ecd9}
+.admin-mode .accounts-table .row-title{font-size:15px;display:block;line-height:1.5;margin-bottom:5px}
+.account-email{display:block;font-size:12px;line-height:1.7;color:#87947b;overflow-wrap:anywhere}
+.account-scope{display:block;font-size:13px;line-height:1.7;margin-top:8px;color:#75826a;overflow-wrap:anywhere}
+.account-last-login{display:block;font-size:11px;line-height:1.7;color:#9ba38f;margin-top:9px}
+.account-last-login b{font-size:12px;color:#6f7e63;font-weight:400;margin-left:6px}
+.account-actions{display:flex;flex-direction:column;gap:8px;width:100%;max-width:200px}
+.admin-mode .account-actions .ui-btn{width:100%;min-height:40px;text-align:center;font-size:12px;white-space:normal;overflow-wrap:anywhere;padding:10px 12px;color:#52674b;background:#fff}
+.admin-mode .account-actions .reset-access{border-color:#dce4cf;background:#f7f9f1;color:#68764f}
+.admin-mode .account-actions .reset-access:hover{background:#edf3e1;border-color:#c5d2b1}
+.admin-mode .accounts-table tbody tr:hover{background:#fbfcf7}
+@container(min-width:1350px){.account-actions{flex-direction:row;max-width:none}.account-avatar{width:46px;height:46px}.admin-mode .accounts-table td{padding-block:25px}}
+@container(max-width:850px){
+ .account-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .accounts-table,.accounts-table tbody{display:block}
+ .accounts-table colgroup,.accounts-table thead{display:none}
+ .accounts-table tbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:20px;background:#f8faf4}
+ .accounts-table tr{display:flex;flex-direction:column;border:1px solid #dfe6d5;border-radius:12px;background:#fff;min-width:0;padding:20px}
+ .admin-mode .accounts-table td{display:block;padding:0!important;border:0;max-width:none!important}
+ .admin-mode .accounts-table .account-identity{padding-bottom:18px!important;margin-bottom:16px;border-bottom:1px solid #edf1e6}
+ .admin-mode .accounts-table .account-role{margin-bottom:15px}
+ .account-avatar{width:38px;height:38px;border-radius:11px}.account-person{gap:11px}
+ .account-actions{flex-direction:row;max-width:none;gap:9px;margin-top:20px}
+ .account-actions .ui-btn{flex:1}
+ .account-last-login b{display:inline-block}
+ .admin-mode .console-box-head small{font-size:11px}
+}
+@container(max-width:520px){.accounts-table tbody{grid-template-columns:minmax(0,1fr);padding:14px}.account-overview>div{padding:15px;gap:10px}.account-overview strong{font-size:25px}.account-overview span{font-size:11px}.account-overview{gap:10px}.account-avatar{width:42px;height:42px}}
+@media(max-width:1100px){.admin-mode .console{grid-template-columns:205px minmax(0,1fr);background:linear-gradient(90deg,#26362d 205px,#fafbf8 205px)}.admin-mode .console-side{padding:28px 13px}.admin-mode .console-main{padding:28px}.admin-mode .console-head{flex-wrap:wrap}.admin-mode .console-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-mode .console-grid{grid-template-columns:1fr}}
+@media(max-width:700px){
+ .admin-mode .header-inner{padding:12px 16px;min-height:76px}.admin-mode .logo{width:95px}.admin-mode .brand span{display:none}
+ .admin-mode main{padding:14px 10px 24px}.admin-mode #accountBar{padding:0 5px;gap:10px!important;margin-bottom:12px!important}.admin-mode #accountName{font-size:11px;overflow-wrap:anywhere}.admin-mode #logout{font-size:11px;padding:8px 11px;flex-shrink:0}
+ .admin-mode .console{grid-template-columns:minmax(0,1fr);border-radius:13px;background:#fafbf8}
+ .admin-mode .console-side{position:static;height:auto;min-height:0;padding:18px 12px 12px;gap:16px}
+ .admin-mode .console-mark{display:flex;align-items:center;justify-content:space-between;border:0;padding:0 8px;gap:16px}
+ .admin-mode .console-mark small{font-size:27px;margin:0}.admin-mode .console-mark b{font-size:9px;letter-spacing:.15em}
+ .admin-mode .console-nav{display:flex;gap:6px}.admin-mode .console-nav button{padding:10px 12px;min-height:40px;font-size:11px;gap:8px}
+ .admin-mode .console-main{padding:22px 16px}.admin-mode .console-head{gap:16px;margin-bottom:22px}.admin-mode .console-head h1{font-size:26px;letter-spacing:-.8px}.admin-mode .console-head p{font-size:12px}
+ .admin-mode .console-filters{padding:14px;gap:12px}.admin-mode .console-filters input,.admin-mode .console-filters select{max-width:155px;font-size:12px}
+ .admin-mode .console-kpis{gap:12px}.admin-mode .console-kpi{padding:18px 15px}.admin-mode .console-kpi strong{font-size:32px}.admin-mode .console-kpi small{font-size:11px}
+ .admin-mode .console-box-head{padding:18px}.admin-mode .console-box-head h2{font-size:15px}.admin-mode .console-box-body{padding:18px}
+ .admin-mode .console-table td,.admin-mode .console-table th{padding:15px}.admin-mode .console-chart-row{grid-template-columns:88px 1fr 25px;gap:10px;font-size:11px}
+ .admin-mode .console-side-note{display:none}.admin-mode footer{margin:0 12px;padding:18px 5px;font-size:11px}
+}
