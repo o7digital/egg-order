@@ -1,0 +1,11 @@
+# Private portal database bridge; bearer token enforced by the upstream service.
+location = /artimex-portal-store {
+    if ($scheme != https) { return 403; }
+    client_max_body_size 256k;
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    set $portal_store http://artimex-portal-store:8080;
+    proxy_pass $portal_store;
+    proxy_set_header Authorization $http_authorization;
+    proxy_read_timeout 20s;
+    add_header Cache-Control "no-store" always;
+}

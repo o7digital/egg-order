@@ -4,7 +4,7 @@ import { directory } from '../lib/directory.mjs';
 export default async function handler(req,res) {
  res.setHeader('Cache-Control','no-store');
  if(req.method!=='GET') return res.status(405).json({error:'Method not allowed.'});
- if(session(req)?.role!=='superuser') return res.status(403).json({error:'Super user access required.'});
+ if((await session(req))?.role!=='superuser') return res.status(403).json({error:'Super user access required.'});
  try {
  const events=(await command('LRANGE','portal:events',0,9999)).map(JSON.parse);
  const locations=[...new Set(directory.flatMap(u=>u.restaurants).filter(Boolean))].map(restaurant=>{

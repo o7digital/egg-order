@@ -12,7 +12,7 @@
 <body>
 <header><div class="header-inner"><div class="brand"><img class="logo" src="/assets/artimex-logo.webp" alt="Artimex Artisan Mexican Bakery"><span>RESTAURANT PORTAL</span></div><div class="header-tools"><select id="languageSelect" aria-label="Language / Idioma"><option value="en">English</option><option value="es">Español</option></select><span class="badge green">CSV upload · Pilot phase</span></div></div></header>
 <main>
-<section id="loginPanel" class="card" style="max-width:480px;margin:20px auto 50px"><div class="body"><div class="eyebrow">Restaurant access</div><h1 style="font-size:30px">Sign in</h1><p class="hint">Your account automatically identifies your restaurant.</p><form id="loginForm"><label class="field">Email address<input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:12px;margin-top:8px" placeholder="pacific@gallogiro.com"></label><label class="field">Password<input id="loginPassword" type="password" autocomplete="current-password" required></label><label class="field" id="codeField" hidden>Email verification code<input id="loginCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"></label><button type="button" id="activateAccount">Activate / reset account</button><button id="loginSubmit" class="primary">Sign in</button><p id="loginStatus" class="status" role="status"></p></form></div></section>
+<section id="loginPanel" class="card" style="max-width:480px;margin:20px auto 50px"><div class="body"><div class="eyebrow">Restaurant access</div><h1 style="font-size:30px">Sign in</h1><p class="hint">Your account automatically identifies your restaurant.</p><form id="loginForm"><label class="field">Email address<input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:12px;margin-top:8px" placeholder="egg-pacific@gallogiro.com"></label><label class="field">Password<input id="loginPassword" type="password" autocomplete="current-password" required></label><button id="loginSubmit" class="primary">Sign in</button><p id="loginStatus" class="status" role="status"></p></form></div></section>
 <div id="portal" hidden><div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:24px"><strong id="accountName"></strong><button id="logout" type="button">Sign out</button></div>
 <section id="adminPanel" class="card" hidden style="margin-bottom:24px"><div class="body"><h2>Super user dashboard</h2><button id="refreshDashboard" type="button">Refresh statistics & access log</button><p id="dashboardStatus" role="status"></p><div id="dashboardData" style="overflow:auto;max-height:600px"></div></div></section><label class="field" id="locationField" hidden>Upload location<select id="uploadLocation"></select></label><div class="eyebrow">El Gallo Giro → Artimex</div>
 <h1>Your R365 export,<br>ready for our team.</h1>
@@ -77,7 +77,7 @@ const initialLanguage = language; language = 'en'; applyLanguage(initialLanguage
 document.querySelector('#languageSelect').addEventListener('change', event => applyLanguage(event.target.value));
 
 const $ = selector => document.querySelector(selector);
-let challenge = null, setupAccount = false;
+let changingPassword = false;
 let account = null, selected = null, previewToken = null, busy = false;
 function status(message, kind = '') { $('#uploadStatus').textContent = translate(message); $('#uploadStatus').className = 'status ' + kind; }
 async function api(path, body, method = 'POST') {
@@ -93,21 +93,23 @@ function showAccount(user) {
   for(const option of $('#uploadLocation').options) option.hidden = user?.role !== 'superuser' && !user?.restaurants?.includes(option.value);
   if(user?.restaurant) $('#uploadLocation').value=user.restaurant;
   if (user?.role === 'superuser') loadDashboard();
-  if (user) { $('#accountName').textContent = (user.role==='superuser'?'Super user':user.restaurants?.join(', ')||user.restaurant) + ' · ' + user.email; $('#restaurantLabel').textContent = user.restaurant; $('#destinationName').textContent = translate(user.restaurant + ' → Artimex server'); $('#uploadSubmit').disabled = false; }
+  if (user) { $('#accountName').textContent = (user.role==='superuser'?'Super user':user.restaurants?.join(', ')||user.restaurant) + ' · ' + user.email; const location=user.restaurant||$('#uploadLocation').value; $('#restaurantLabel').textContent = location; $('#destinationName').textContent = translate(location + ' → Artimex server'); $('#uploadSubmit').disabled = false; }
   else { $('#csvFile').value = ''; status(''); }
 }
 $('#loginForm').addEventListener('submit', async event => {
   event.preventDefault(); $('#loginSubmit').disabled = true; $('#loginStatus').textContent = translate('Signing in…');
   try {
-    const data = await api(challenge || setupAccount ? 'account' : 'session', {action:challenge?'verify':setupAccount?'setup':'login',email:$('#loginEmail').value,password:$('#loginPassword').value,challenge,code:$('#loginCode').value});
-    if (data.verificationRequired) { challenge=data.challenge; $('#codeField').hidden=false; $('#loginCode').required=true; $('#loginStatus').textContent='Check your email for the 6-digit code. For activation/reset, choose a password of at least 12 characters.'; }
-    else { showAccount(data); challenge=null; setupAccount=false; $('#loginPassword').value=''; $('#loginCode').value=''; $('#codeField').hidden=true; $('#loginCode').required=false; $('#loginStatus').textContent=''; }
+    const data = await api(changingPassword?'account':'session', changingPassword?{action:'change-password',newPassword:$('#loginPassword').value}:{email:$('#loginEmail').value,password:$('#loginPassword').value});
+    if(data.mustChangePassword) {
+      changingPassword=true;$('#loginPassword').value='';$('#loginPassword').minLength=12;$('#loginPassword').autocomplete='new-password';$('#loginEmail').readOnly=true;
+      $('#loginSubmit').textContent=language==='es'?'Guardar nueva contraseña':'Save new password';
+      $('#loginStatus').textContent=language==='es'?'Elija una contraseña personal de al menos 12 caracteres.':'Choose your personal password (at least 12 characters).';$('#loginPassword').focus();
+    } else {changingPassword=false;$('#loginEmail').readOnly=false;$('#loginPassword').minLength=0;$('#loginPassword').autocomplete='current-password';$('#loginSubmit').textContent=translate('Sign in');showAccount(data);$('#loginPassword').value='';$('#loginStatus').textContent='';}
+
   }
   catch (error) { $('#loginStatus').textContent = translate(error.message); }
   finally { $('#loginSubmit').disabled = false; }
 });
-$('#activateAccount').addEventListener('click', () => {setupAccount=true;challenge=null;$('#codeField').hidden=true;$('#loginCode').required=false;$('#loginPassword').minLength=12;$('#loginStatus').textContent='Enter your approved email and a new password (12+ characters), then press Sign in to receive an activation code.';});
-$('#loginEmail').addEventListener('input',()=>{challenge=null;$('#codeField').hidden=true;$('#loginCode').required=false;});
 async function loadDashboard() {
  try { const data=await api('dashboard',null,'GET'); const container=$('#dashboardData');container.replaceChildren();
  for(const [title,rows,columns] of [['Uploads by location',data.locations,['restaurant','uploads','rows','errors','lastUpload']],['Accounts',data.accounts,['name','email','role','restaurant','pending']],['Access & upload log',data.events,['at','email','restaurant','type','filename','message']]]) {
@@ -118,12 +120,14 @@ async function loadDashboard() {
  } catch(error){$('#dashboardStatus').textContent=error.message;}
 }
 $('#refreshDashboard').addEventListener('click',loadDashboard);
-$('#uploadLocation').addEventListener('change',()=>{clearPreview();$('#restaurantLabel').textContent=$('#uploadLocation').value;});
+$('#uploadLocation').addEventListener('change',()=>{clearPreview();$('#restaurantLabel').textContent=$('#uploadLocation').value;$('#destinationName').textContent=translate($('#uploadLocation').value+' → Artimex server');});
 $('#logout').addEventListener('click', async () => { try { await api('session', null, 'DELETE'); showAccount(null); } catch { status('Unable to sign out. Please try again.', 'error'); } });
 api('session', null, 'GET').then(showAccount).catch(() => showAccount(null));
 fetch('/assets/restaurants.json').then(r => r.json()).then(list => {
   $('#restaurantCount').textContent = list.length;
-  for(const item of list){const option=document.createElement('option');option.value=item.name;option.textContent=item.name;$('#uploadLocation').append(option);}
+  for(const item of list){const option=document.createElement('option');option.value=item.name;option.textContent=item.name;option.hidden=!!account && account.role!=='superuser' && !account.restaurants?.includes(item.name);$('#uploadLocation').append(option);}
+  if(account?.restaurant) $('#uploadLocation').value=account.restaurant;
+  if(account){const location=account.restaurant||$('#uploadLocation').value;$('#restaurantLabel').textContent=location;$('#destinationName').textContent=translate(location+' → Artimex server');}
   for (const item of list) { const card = document.createElement('div'); card.className = 'restaurant'; card.textContent = item.name; $('#restaurantDirectory').append(card); }
 }).catch(() => { $('#restaurantCount').textContent = translate('Directory unavailable'); });
 $('#csvFile').addEventListener('change', () => {

@@ -7,10 +7,10 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });
   if (req.method === 'GET') {
-    const user = session(req); return user ? res.status(200).json(publicUser(user)) : res.status(401).json({ error: 'Connectez-vous à votre compte restaurant.' });
+    const user = await session(req); return user ? res.status(200).json(publicUser(user)) : res.status(401).json({ error: 'Connectez-vous à votre compte restaurant.' });
   }
   if (req.method === 'DELETE') {
-    const user=session(req);
+    const user=await session(req);
     if(user && process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('logout',user).catch(()=>{});
     res.setHeader('Set-Cookie', 'artimex_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0'); return res.status(200).json({ ok: true });
   }

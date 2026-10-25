@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Méthode non autorisée.' }); }
   if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });
-  let user = session(req);
+  let user = await session(req);
   if (!user) return res.status(401).json({ error: 'Votre session a expiré. Reconnectez-vous.' });
   if (req.body?.restaurant && user.role !== 'superuser' && !user.restaurants?.includes(req.body.restaurant) && req.body.restaurant !== user.restaurant) return res.status(403).json({error:'Ce compte ne peut envoyer que pour son restaurant.'});
   if (!process.env.ARTIMEX_SFTP_PASSWORD || !process.env.ARTIMEX_SFTP_FINGERPRINT) return res.status(503).json({ error: 'Service de dépôt non configuré.' });

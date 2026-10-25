@@ -2,38 +2,42 @@
 
 Production: https://r365-gb-order-seven.vercel.app/
 
-Pilot account: pacific@gallogiro.com, bound server-side to EGG Pacific. Credentials are provisioned privately; no mail is sent. The password is not stored in source or exposed to the browser. Other restaurant directory entries do not yet have accounts.
+Approved accounts are provisioned privately with temporary passwords and scoped restaurant access. See the VPS1 account setup below. The former Pacific-only pilot is retained only as a configuration-disabled fallback.
 
 Flow: login → choose CSV → server-generated preview of up to 20 rows → explicit confirmation → SFTP upload to Artimex `/incoming` → manual or separately configured GB import. Preview does not write to FTP. A signed preview token binds the user, restaurant, filename and exact file bytes for 15 minutes. Sessions use a signed Secure HttpOnly SameSite cookie with an eight-hour lifetime. Changing files requires a new preview. UTF-8 CSV with a header and consistent columns is required; 2 MiB maximum. Original file bytes are preserved.
 
-Required production secrets: ARTIMEX_PORTAL_USERS (JSON array of email, restaurant, scrypt salt/hash), ARTIMEX_SESSION_SECRET, ARTIMEX_SFTP_PASSWORD, ARTIMEX_SFTP_FINGERPRINT. The former shared upload code is no longer accepted. Provision accounts with scrypt N=16384,r=8,p=1,64 bytes. Remove/rotate a user to revoke access. No public registration or email workflow.
+Required production secrets: ARTIMEX_SESSION_SECRET, ARTIMEX_SFTP_PASSWORD, ARTIMEX_SFTP_FINGERPRINT and PORTAL_STORE_TOKEN. See VPS1 database configuration below. No public registration or email workflow.
 
 Shared server verified: VPS1 51.178.36.17 / mail.o7digitalgroup.com. FTP artimex-ftp at 5.39.3.225:21 and website SFTP share `/srv/artimex`; client `/incoming` corresponds to `/srv/artimex/incoming`. Older reports called this machine VPS2. VPS2 today is 92.222.23.247.
 
 The site confirms receipt on Artimex, not import into GlobalBake. GB runs in a remote Windows environment; scheduling its importer and fetching files to that Windows environment are outside this repository. The Windows host must remain available; whether an interactive session is needed depends on GB. R365 API retrieval is not implemented.
 
-`assets/restaurants.json` contains the ten restaurant names approved for the pilot. `npm ci`, `npm test`, `npm run build`, then `vercel --prod` against the existing linked project. Repeated confirmed submissions can create duplicate files; staff must verify orders before import.
+`assets/restaurants.json` contains the restaurant directory. `npm ci`, `npm test`, `npm run build`, then `vercel --prod` against the existing linked project. Repeated confirmed submissions can create duplicate files; staff must verify orders before import.
 
 ## Languages
 
 The portal defaults to US English and offers Spanish via the header selector. The choice persists in browser localStorage. API error/receipt messages follow the selected language. Restaurant names and original CSV cells are not translated.
 
-## Multi-location accounts and administration
+## VPS1 database and accounts
 
-The new account system is implemented but gated by `PORTAL_ACCOUNTS_ENABLED=true` until the following production settings are provisioned:
+Production accounts use temporary passwords, with a mandatory password change on first sign-in. Email verification and public email reset are removed. Accounts are approved in `lib/directory.mjs`; shared `egg-bellflower@gallogiro.com` has Bristol and Bellflower and both manager names are retained. The five super users have access to all locations and the dashboard. Fontana is included; Panorama remains in the original directory without a manager assignment.
 
-- `PORTAL_REDIS_URL`, `PORTAL_REDIS_TOKEN`: persistent Upstash-compatible Redis REST storage for password hashes, one-use verification challenges, rate limits and audit events. Use an owned durable database, not temporary storage.
-- `RESEND_API_KEY`, `PORTAL_EMAIL_FROM`: email delivery credentials and a verified sender.
-- Existing `ARTIMEX_SESSION_SECRET` and SFTP credentials remain required.
+Production configuration: `PORTAL_ACCOUNTS_ENABLED=true`, `PORTAL_STORE_URL=https://mail.o7digitalgroup.com/artimex-portal-store`, and secret `PORTAL_STORE_TOKEN`. Existing `ARTIMEX_SESSION_SECRET` and SFTP credentials remain required. No email service or external database provider is required.
 
-Configure these first, test activation and actual email delivery, then enable `PORTAL_ACCOUNTS_ENABLED` and redeploy. Until enabled, the existing Pacific pilot still works; new-account activation reports a configuration blocker. No account activation messages have been sent. Account activation/reset proves email ownership and sets a password of at least 12 characters. Subsequent login requires the password followed by a six-digit email code (10-minute lifetime, five guesses, single use). This creates portal accounts, not email mailboxes. Password reset does not revoke already-issued eight-hour sessions.
+Database: dedicated SQLite on VPS1 (`51.178.36.17`), `/srv/artimex-portal-db/portal.sqlite3`. `ops/store.py` provides a bearer-authenticated HTTPS storage bridge, with a Docker service named `artimex-portal-store` on the existing private Mailcow network; no database port is published. Nginx forwards only the dedicated `/artimex-portal-store` path. Source/config are in `/opt/artimex-portal`; the extra Nginx location is `site.artimex-portal.custom` in the existing custom include directory. Do not replace Mailcow core configuration.
 
-`lib/directory.mjs` defines the five requested super users and approved manager assignments. Shared `egg-bellflower@gallogiro.com` has Bristol and Bellflower; both manager/location assignments are retained. Canoga Park is deduplicated. Fontana has been added; Panorama remains in the original restaurant directory without an assigned manager. A shared email account has a shared access-log identity; it cannot distinguish the individual using that mailbox.
+Passwords are salted scrypt hashes. Temporary credentials expire after seven days and issue only a restricted ten-minute password-change cookie. Normal access requires a new personal password of 12–256 characters; an atomic compare-and-set prevents reusing the temporary credential. Password changes/reset provisioning invalidate prior sessions by account version. Sessions last eight hours and validate their account version against the database on every protected API request. Login attempts are limited per account and IP. There is no email-code step.
 
-Super users can upload for every directory location and view `/api/dashboard`; managers can upload only for assigned locations. The dashboard shows uploads, CSV row counts, errors, latest upload, accounts and access/upload events over the latest 10,000 events (clearly labelled). Events remain stored beyond the displayed window. Older uploads before activation are not backfilled. Upload receipt means SFTP deposit only, not successful GlobalBake import.
+Provision new directory entries with `PORTAL_STORE_URL` and `PORTAL_STORE_TOKEN` in the environment, then `node scripts/provision-users.mjs`. Existing accounts are never overwritten. Generated temporary passwords are saved only in a private, ignored `.vercel/temporary-accounts-*.json` file for manual delivery. Never commit passwords or the store token. A shared mailbox account has a shared log identity; the portal cannot distinguish individual people using those credentials.
 
-Optional product control: `ARTIMEX_PRODUCT_CATALOG` is a JSON array of official product identifiers. Recognized identifier headers include SKU, Item, Item Number/Code/ID and Product Code/ID. Unknown or empty products, or a missing identifier column when catalogue validation is enabled, block preview with a visible alert and audit event. Without a catalogue the preview explicitly warns that product existence was not checked.
+Daily SQLite online backups run via `/etc/cron.d/artimex-portal-backup`, retain 14 daily copies in `/srv/artimex-portal-db/backups`, and use `/opt/artimex-portal/backup.sh` (`ops/backup-portal.sh`). These are local VPS backups; no offsite copy is configured. After provisioning, take an immediate backup. For recovery, stop the store container, restore a backup using SQLite backup API into the database, remove stale WAL/SHM files only while stopped, preserve UID/GID 10001, and restart it. Always retain a copy of the current database before restoring.
 
-Optional Hugging Face integration: set `HF_TOKEN` (Inference Providers permission) and `HF_MODEL` to a compatible chat-completion model. The integration sends only aggregate counts (rows, columns, empty cells, negative numeric values); it sends no CSV values or account identifiers. Results are advisory, visible in preview, and never authorize an import. An unavailable model produces a visible warning. Credentials, model and official product catalogue are not currently provisioned. No downstream GlobalBake error callback exists in this repository.
+Super users can view `/api/dashboard`: location uploads, CSV row counts, errors, latest upload, accounts and access events over the latest 10,000 events. Older events remain stored; uploads before activation are not backfilled. Receipt means SFTP deposit, not successful GlobalBake import. No downstream GlobalBake callback exists.
 
-API references: https://resend.com/docs/api-reference/emails/send-email, https://upstash.com/docs/redis/features/restapi, https://huggingface.co/docs/inference-providers/tasks/chat-completion.
+Product control: `ARTIMEX_PRODUCT_CATALOG` is a JSON array of official product identifiers. Recognized headers include SKU, Item, Item Number/Code/ID and Product Code/ID. Unknown or empty products, or a missing identifier column when a catalogue is configured, block preview with a visible alert and audit event. Without the official catalogue, preview explicitly warns that product existence was not checked.
+
+Optional Hugging Face analysis requires `HF_TOKEN` (Inference Providers permission) and `HF_MODEL`. Only aggregate counts (rows, columns, empty cells, negative numeric values) are sent, never CSV values or account identifiers. Results are advisory and do not authorize imports. An unavailable model produces a visible warning. These credentials and the official product catalogue are not yet provisioned.
+
+Verification: `npm test` includes integration tests against a real temporary SQLite storage service (Python 3 required), concurrent first-password changes, temporary credential replay, expired session versions, rate limits, audit storage and dashboard permissions. `npm run build` builds the static site.
+
+Hugging Face API reference: https://huggingface.co/docs/inference-providers/tasks/chat-completion.

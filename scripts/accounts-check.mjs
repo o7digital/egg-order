@@ -1,41 +1,50 @@
 import assert from 'node:assert/strict';
-import { createHmac } from 'node:crypto';
+import { randomUUID, scryptSync } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import account from '../api/account.mjs';
 import dashboard from '../api/dashboard.mjs';
 import { directory } from '../lib/directory.mjs';
 import { scopedUser, session } from '../lib/auth.mjs';
+import { command } from '../lib/store.mjs';
 import { anomalies } from '../lib/anomalies.mjs';
 const shared=directory.find(u=>u.email==='egg-bellflower@gallogiro.com');
 assert.deepEqual(shared.restaurants,['EGG Bristol','EGG Bellflower']);
 assert.equal(scopedUser(shared,'EGG Bellflower').restaurant,'EGG Bellflower');
 assert.throws(()=>scopedUser(shared,'EGG Pacific'));
 assert.equal(directory.filter(u=>u.role==='superuser').length,5);
-Object.assign(process.env,{PORTAL_ACCOUNTS_ENABLED:'true',ARTIMEX_SESSION_SECRET:'test',RESEND_API_KEY:'test',PORTAL_EMAIL_FROM:'test@example.com',PORTAL_REDIS_URL:'https://redis.test',PORTAL_REDIS_TOKEN:'test'});
-const db=new Map();let emailCode;let sends=0;
-global.fetch=async(url,options)=>{
- if(url==='https://api.resend.com/emails'){emailCode=JSON.parse(options.body).text.match(/code is (\d{6})/)[1];sends++;return {ok:true};}
- const [op,...a]=JSON.parse(options.body);let result;
- if(op==='INCR'){result=(Number(db.get(a[0]))||0)+1;db.set(a[0],result);}
- if(op==='SET'){db.set(a[0],a[1]);result='OK';}
- if(op==='GET')result=db.get(a[0])||null;
- if(op==='LPUSH')result=1;
- if(op==='EVAL'){const key=a[2],raw=db.get(key);result=null;if(raw){const d=JSON.parse(raw);d.attempts++;if(d.attempts>5)db.delete(key);else if(d.digest===a[3]){db.delete(key);result=raw;}else db.set(key,JSON.stringify(d));}}
- return {ok:true,json:async()=>({result})};
-};
-const res=()=>({headers:{},setHeader(k,v){this.headers[k]=v;},status(n){this.code=n;return this;},json(v){this.body=v;return this;}});
-const request=async body=>{const r=res();await account({method:'POST',headers:{},body},r);return r;};
-const email=shared.email,password='A-long-test-password';
-let r=await request({action:'setup',email,password});assert.equal(r.code,200);assert(!r.headers['Set-Cookie']);const challenge=r.body.challenge;
-r=await request({action:'verify',email,password,challenge,code:'000000'});assert.equal(r.code,401);
-r=await request({action:'verify',email,password,challenge,code:emailCode});assert.equal(r.code,200);assert.equal(session({headers:{cookie:r.headers['Set-Cookie']}}).email,email);
-r=await request({action:'verify',email,password,challenge,code:emailCode});assert.equal(r.code,401);
-r=await request({email,password:'wrong'});assert.equal(r.code,401);
-r=await request({email,password});assert.equal(r.code,200);assert(r.body.verificationRequired);assert(!r.headers['Set-Cookie']);assert.equal(sends,2);
-const codeChallenge=r.body.challenge;
-for(let i=0;i<6;i++) await request({action:'verify',email,password,challenge:codeChallenge,code:'000000'});
-r=await request({action:'verify',email,password,challenge:codeChallenge,code:emailCode});assert.equal(r.code,401);
-r=res();await dashboard({method:'GET',headers:{}},r);assert.equal(r.code,403);
-process.env.ARTIMEX_PRODUCT_CATALOG='["SKU1"]';
-assert.equal((await anomalies(['SKU','Qty'],[['OTHER','2']]))[0].code,'UNKNOWN_PRODUCT');
-assert.deepEqual(await anomalies(['SKU','Qty'],[['SKU1','2']]),[]);
-console.log('Multi-location permissions, five super users, activation, mandatory email code, replay/guess protection, dashboard isolation and product checks passed');
+const dir=await mkdtemp(join(tmpdir(),'portal-test-'));
+const port=20000+Math.floor(Math.random()*20000);
+Object.assign(process.env,{PORTAL_ACCOUNTS_ENABLED:'true',ARTIMEX_SESSION_SECRET:'test',PORTAL_STORE_URL:`http://127.0.0.1:${port}`,PORTAL_STORE_TOKEN:'test'});
+const server=spawn('python3',['ops/store.py'],{env:{...process.env,PORTAL_DB_PATH:join(dir,'test.sqlite3'),PORTAL_PORT:String(port)},stdio:['ignore','ignore','pipe']});
+try {
+ let connected=false;for(let i=0;i<100;i++){try{await command('GET','portal:test');connected=true;break;}catch{await new Promise(r=>setTimeout(r,50));}}
+ assert(connected,'SQLite test service failed to start');
+ const res=()=>({headers:{},setHeader(k,v){this.headers[k]=v;},status(n){this.code=n;return this;},json(v){this.body=v;return this;}});
+ const request=async(body,headers={})=>{const r=res();await account({method:'POST',headers,body},r);return r;};
+ const email=shared.email,password='Temporary-test-password',version=randomUUID();
+ await command('SET','portal:account:'+email,JSON.stringify({salt:'test',hash:scryptSync(password,'test',64).toString('hex'),version,mustChangePassword:true,expiresAt:Date.now()+60000}));
+ let r=await request({email,password:'wrong'});assert.equal(r.code,401);
+ r=await request({action:'setup',email});assert.equal(r.code,401); // Email reset removed.
+ r=await request({email,password});assert.equal(r.code,200);assert.equal(r.body.mustChangePassword,true);
+ const restricted={cookie:r.headers['Set-Cookie']};assert.equal(await session({headers:restricted}),null);
+ let denied=res();await dashboard({method:'GET',headers:restricted},denied);assert.equal(denied.code,403);
+ r=await request({action:'change-password',newPassword:'short'},restricted);assert.equal(r.code,400);
+ r=await request({action:'change-password',newPassword:password},restricted);assert.equal(r.code,400);
+ const newPassword='Personal-long-password';
+ const changed=await Promise.all([request({action:'change-password',newPassword},restricted),request({action:'change-password',newPassword},restricted)]);
+ assert.equal(changed.filter(r=>r.code===200).length,1,'Temporary credential must be consumed once');
+ r=changed.find(r=>r.code===200);const headers={cookie:r.headers['Set-Cookie']};assert.equal((await session({headers})).email,email);
+ r=await request({email,password});assert.equal(r.code,401);
+ r=await request({email,password:newPassword});assert.equal(r.code,200);assert(!r.body.mustChangePassword);
+ const stored=JSON.parse(await command('GET','portal:account:'+email));await command('SET','portal:account:'+email,JSON.stringify({...stored,version:randomUUID()}));assert.equal(await session({headers}),null);
+ denied=res();await dashboard({method:'GET',headers:{}},denied);assert.equal(denied.code,403);
+ const events=(await command('LRANGE','portal:events',0,100)).map(JSON.parse);assert(events.some(e=>e.type==='password_changed'));assert(events.every(e=>!JSON.stringify(e).includes(newPassword)));
+ for(let i=0;i<11;i++)r=await request({email:'bad@example.com',password:'wrong'});assert.equal(r.code,429);
+ const admin=directory.find(u=>u.role==='superuser');await command('SET','portal:account:'+admin.email,JSON.stringify({salt:'test',hash:scryptSync(newPassword,'test',64).toString('hex'),version:'admin',mustChangePassword:false}));
+ r=await request({email:admin.email,password:newPassword});denied=res();await dashboard({method:'GET',headers:{cookie:r.headers['Set-Cookie']}},denied);assert.equal(denied.code,200);assert.equal(denied.body.locations.length,10);
+ process.env.ARTIMEX_PRODUCT_CATALOG='["SKU1"]';assert.equal((await anomalies(['SKU','Qty'],[['OTHER','2']]))[0].code,'UNKNOWN_PRODUCT');assert.deepEqual(await anomalies(['SKU','Qty'],[['SKU1','2']]),[]);
+ console.log('Real SQLite storage, scoped accounts, temporary passwords, required change, single-use concurrency, revocation, rate limits, audit and dashboard permissions passed');
+} finally {server.kill();await new Promise(resolve=>server.once('exit',resolve));await rm(dir,{recursive:true,force:true});}
