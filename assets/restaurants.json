@@ -38,5 +38,9 @@
   {
     "id": "van-nuys",
     "name": "EGG Van Nuys"
+  },
+  {
+    "id": "fontana",
+    "name": "EGG Fontana"
   }
 ]

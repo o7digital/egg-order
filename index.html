@@ -12,9 +12,9 @@
 <body>
 <header><div class="header-inner"><div class="brand"><img class="logo" src="/assets/artimex-logo.webp" alt="Artimex Artisan Mexican Bakery"><span>RESTAURANT PORTAL</span></div><div class="header-tools"><select id="languageSelect" aria-label="Language / Idioma"><option value="en">English</option><option value="es">Español</option></select><span class="badge green">CSV upload · Pilot phase</span></div></div></header>
 <main>
-<section id="loginPanel" class="card" style="max-width:480px;margin:20px auto 50px"><div class="body"><div class="eyebrow">Restaurant access</div><h1 style="font-size:30px">Sign in</h1><p class="hint">Your account automatically identifies your restaurant.</p><form id="loginForm"><label class="field">Email address<input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:12px;margin-top:8px" placeholder="pacific@gallogiro.com"></label><label class="field">Password<input id="loginPassword" type="password" autocomplete="current-password" required></label><button id="loginSubmit" class="primary">Sign in</button><p id="loginStatus" class="status" role="status"></p></form></div></section>
+<section id="loginPanel" class="card" style="max-width:480px;margin:20px auto 50px"><div class="body"><div class="eyebrow">Restaurant access</div><h1 style="font-size:30px">Sign in</h1><p class="hint">Your account automatically identifies your restaurant.</p><form id="loginForm"><label class="field">Email address<input id="loginEmail" type="email" autocomplete="username" required style="width:100%;padding:12px;margin-top:8px" placeholder="pacific@gallogiro.com"></label><label class="field">Password<input id="loginPassword" type="password" autocomplete="current-password" required></label><label class="field" id="codeField" hidden>Email verification code<input id="loginCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6"></label><button type="button" id="activateAccount">Activate / reset account</button><button id="loginSubmit" class="primary">Sign in</button><p id="loginStatus" class="status" role="status"></p></form></div></section>
 <div id="portal" hidden><div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:24px"><strong id="accountName"></strong><button id="logout" type="button">Sign out</button></div>
-<div class="eyebrow">El Gallo Giro → Artimex</div>
+<section id="adminPanel" class="card" hidden style="margin-bottom:24px"><div class="body"><h2>Super user dashboard</h2><button id="refreshDashboard" type="button">Refresh statistics & access log</button><p id="dashboardStatus" role="status"></p><div id="dashboardData" style="overflow:auto;max-height:600px"></div></div></section><label class="field" id="locationField" hidden>Upload location<select id="uploadLocation"></select></label><div class="eyebrow">El Gallo Giro → Artimex</div>
 <h1>Your R365 export,<br>ready for our team.</h1>
 <p class="intro">Sign in to your restaurant account and upload your CSV. Artimex receives it on its server and handles the GlobalBake import.</p>
 <div class="steps" aria-label="Upload steps">
@@ -28,7 +28,7 @@
 <div class="destination"><strong id="restaurantLabel"></strong><span>Your restaurant is linked to your account.</span></div><div class="file-area"><span class="file-label">R365 export</span><label class="drop" id="dropZone"><input id="csvFile" type="file" accept=".csv,text/csv" required aria-label="Select the R365 CSV file"><span><strong id="fileName">Drop your CSV here</strong><small id="fileMeta">or click to choose a file · 2 MB maximum</small></span></label></div>
 <div class="destination"><strong id="destinationName">Destination: Artimex server</strong><span id="filenamePreview">The filename will identify your restaurant.</span><br><span class="hint">The original CSV content is preserved.</span></div>
 <button class="primary" id="uploadSubmit" disabled>Preview CSV →</button>
-<section id="previewPanel" hidden style="margin-top:24px"><h2>Review your file</h2><p id="previewSummary" class="hint"></p><div style="overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:8px"><table id="previewTable" style="border-collapse:collapse;width:100%;font-size:13px"></table></div><p class="hint" style="margin-top:12px">Preview of the first 20 rows. Check the restaurant and data before uploading. GlobalBake business rules are not validated here.</p><label style="display:block;margin:16px 0"><input id="confirmData" type="checkbox"> I confirm the restaurant and the file to upload.</label><button id="confirmUpload" type="button" class="primary" disabled>Confirm and upload to Artimex</button></section>
+<section id="previewPanel" hidden style="margin-top:24px"><h2>Review your file</h2><p id="previewAlerts" class="status" role="status"></p><p id="previewSummary" class="hint"></p><div style="overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:8px"><table id="previewTable" style="border-collapse:collapse;width:100%;font-size:13px"></table></div><p class="hint" style="margin-top:12px">Preview of the first 20 rows. Check the restaurant and data before uploading. GlobalBake business rules are not validated here.</p><label style="display:block;margin:16px 0"><input id="confirmData" type="checkbox"> I confirm the restaurant and the file to upload.</label><button id="confirmUpload" type="button" class="primary" disabled>Confirm and upload to Artimex</button></section>
 <div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
 </form>
 </div></section>
@@ -77,6 +77,7 @@ const initialLanguage = language; language = 'en'; applyLanguage(initialLanguage
 document.querySelector('#languageSelect').addEventListener('change', event => applyLanguage(event.target.value));
 
 const $ = selector => document.querySelector(selector);
+let challenge = null, setupAccount = false;
 let account = null, selected = null, previewToken = null, busy = false;
 function status(message, kind = '') { $('#uploadStatus').textContent = translate(message); $('#uploadStatus').className = 'status ' + kind; }
 async function api(path, body, method = 'POST') {
@@ -88,19 +89,41 @@ async function api(path, body, method = 'POST') {
 function clearPreview() { selected = null; previewToken = null; $('#previewPanel').hidden = true; $('#confirmData').checked = false; $('#confirmUpload').disabled = true; }
 function showAccount(user) {
   account = user; $('#loginPanel').hidden = !!user; $('#portal').hidden = !user; clearPreview();
-  if (user) { $('#accountName').textContent = user.restaurant + ' · ' + user.email; $('#restaurantLabel').textContent = user.restaurant; $('#destinationName').textContent = translate(user.restaurant + ' → Artimex server'); $('#uploadSubmit').disabled = false; }
+  $('#adminPanel').hidden = user?.role !== 'superuser'; $('#locationField').hidden = !(user?.role === 'superuser' || user?.restaurants?.length > 1);
+  for(const option of $('#uploadLocation').options) option.hidden = user?.role !== 'superuser' && !user?.restaurants?.includes(option.value);
+  if(user?.restaurant) $('#uploadLocation').value=user.restaurant;
+  if (user?.role === 'superuser') loadDashboard();
+  if (user) { $('#accountName').textContent = (user.role==='superuser'?'Super user':user.restaurants?.join(', ')||user.restaurant) + ' · ' + user.email; $('#restaurantLabel').textContent = user.restaurant; $('#destinationName').textContent = translate(user.restaurant + ' → Artimex server'); $('#uploadSubmit').disabled = false; }
   else { $('#csvFile').value = ''; status(''); }
 }
 $('#loginForm').addEventListener('submit', async event => {
   event.preventDefault(); $('#loginSubmit').disabled = true; $('#loginStatus').textContent = translate('Signing in…');
-  try { showAccount(await api('session', { email: $('#loginEmail').value, password: $('#loginPassword').value })); $('#loginPassword').value = ''; $('#loginStatus').textContent = ''; }
+  try {
+    const data = await api(challenge || setupAccount ? 'account' : 'session', {action:challenge?'verify':setupAccount?'setup':'login',email:$('#loginEmail').value,password:$('#loginPassword').value,challenge,code:$('#loginCode').value});
+    if (data.verificationRequired) { challenge=data.challenge; $('#codeField').hidden=false; $('#loginCode').required=true; $('#loginStatus').textContent='Check your email for the 6-digit code. For activation/reset, choose a password of at least 12 characters.'; }
+    else { showAccount(data); challenge=null; setupAccount=false; $('#loginPassword').value=''; $('#loginCode').value=''; $('#codeField').hidden=true; $('#loginCode').required=false; $('#loginStatus').textContent=''; }
+  }
   catch (error) { $('#loginStatus').textContent = translate(error.message); }
   finally { $('#loginSubmit').disabled = false; }
 });
+$('#activateAccount').addEventListener('click', () => {setupAccount=true;challenge=null;$('#codeField').hidden=true;$('#loginCode').required=false;$('#loginPassword').minLength=12;$('#loginStatus').textContent='Enter your approved email and a new password (12+ characters), then press Sign in to receive an activation code.';});
+$('#loginEmail').addEventListener('input',()=>{challenge=null;$('#codeField').hidden=true;$('#loginCode').required=false;});
+async function loadDashboard() {
+ try { const data=await api('dashboard',null,'GET'); const container=$('#dashboardData');container.replaceChildren();
+ for(const [title,rows,columns] of [['Uploads by location',data.locations,['restaurant','uploads','rows','errors','lastUpload']],['Accounts',data.accounts,['name','email','role','restaurant','pending']],['Access & upload log',data.events,['at','email','restaurant','type','filename','message']]]) {
+ const h=document.createElement('h3');h.textContent=title;container.append(h);const table=document.createElement('table');table.style.cssText='width:100%;font-size:12px;text-align:left';
+ const head=table.createTHead().insertRow();for(const c of columns){const th=document.createElement('th');th.textContent=c;head.append(th);}
+ for(const row of rows){const tr=table.insertRow();for(const c of columns){const td=tr.insertCell();td.textContent=String(row[c]??'');td.style.padding='8px';}}container.append(table);
+ } $('#dashboardStatus').textContent=data.window+' · HF: '+data.integration.status;
+ } catch(error){$('#dashboardStatus').textContent=error.message;}
+}
+$('#refreshDashboard').addEventListener('click',loadDashboard);
+$('#uploadLocation').addEventListener('change',()=>{clearPreview();$('#restaurantLabel').textContent=$('#uploadLocation').value;});
 $('#logout').addEventListener('click', async () => { try { await api('session', null, 'DELETE'); showAccount(null); } catch { status('Unable to sign out. Please try again.', 'error'); } });
 api('session', null, 'GET').then(showAccount).catch(() => showAccount(null));
 fetch('/assets/restaurants.json').then(r => r.json()).then(list => {
   $('#restaurantCount').textContent = list.length;
+  for(const item of list){const option=document.createElement('option');option.value=item.name;option.textContent=item.name;$('#uploadLocation').append(option);}
   for (const item of list) { const card = document.createElement('div'); card.className = 'restaurant'; card.textContent = item.name; $('#restaurantDirectory').append(card); }
 }).catch(() => { $('#restaurantCount').textContent = translate('Directory unavailable'); });
 $('#csvFile').addEventListener('change', () => {
@@ -115,8 +138,9 @@ $('#uploadForm').addEventListener('submit', async event => {
   busy = true; $('#uploadSubmit').disabled = true; $('#csvFile').disabled = true; status('Preparing preview. No file is sent to FTP at this stage.');
   try {
     const content = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = () => reject(Error('Unable to read the file.')); reader.readAsDataURL(file); });
-    const payload = { filename: file.name, content };
+    const payload = { filename: file.name, content, restaurant: account.role==='superuser'||account.restaurants?.length>1?$('#uploadLocation').value:account.restaurant };
     const data = await api('preview', payload); selected = payload; previewToken = data.previewToken;
+    $('#previewAlerts').textContent=(data.alerts||[]).map(a=>a.message).join(' · ');
     $('#previewSummary').textContent = translate(data.restaurant + ' · ' + data.filename + ' · ' + data.rowCount + ' data rows · ' + data.headers.length + ' columns');
     const table = $('#previewTable'); table.replaceChildren();
     const head = document.createElement('thead'), body = document.createElement('tbody');

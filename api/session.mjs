@@ -1,6 +1,8 @@
+import { audit } from '../lib/store.mjs';
+import account from './account.mjs';
 import { localizeResponse } from '../lib/locale.mjs';
 import { users, session, sign, checkPassword, publicUser, sameOrigin } from '../lib/auth.mjs';
-export default function handler(req, res) {
+export default async function handler(req, res) {
   localizeResponse(req, res);
   res.setHeader('Cache-Control', 'no-store');
   if (!sameOrigin(req)) return res.status(403).json({ error: 'Origine non autorisée.' });
@@ -8,10 +10,13 @@ export default function handler(req, res) {
     const user = session(req); return user ? res.status(200).json(publicUser(user)) : res.status(401).json({ error: 'Connectez-vous à votre compte restaurant.' });
   }
   if (req.method === 'DELETE') {
+    const user=session(req);
+    if(user && process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('logout',user).catch(()=>{});
     res.setHeader('Set-Cookie', 'artimex_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0'); return res.status(200).json({ ok: true });
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST, DELETE'); return res.status(405).json({ error: 'Méthode non autorisée.' }); }
   if (!process.env.ARTIMEX_SESSION_SECRET || !users().length) return res.status(503).json({ error: 'Connexion non configurée.' });
+  if (process.env.PORTAL_ACCOUNTS_ENABLED === 'true') return account(req, res);
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
   const password = req.body?.password;
   const user = users().find(u => u.email === email);

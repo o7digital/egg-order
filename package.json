@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/check.mjs && node scripts/upload-check.mjs && node scripts/auth-check.mjs",
+    "test": "node scripts/check.mjs && node scripts/upload-check.mjs && node scripts/auth-check.mjs && node scripts/accounts-check.mjs",
     "dev": "npx serve ."
   },
   "dependencies": {
