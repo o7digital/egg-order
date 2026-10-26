@@ -1,6 +1,6 @@
 # Portal privacy notice implementation
 
-Version: 2026-10-25.1. Published languages: English and Spanish.
+Current version: 2026-10-25.2; version 2026-10-25.1 remains archived unchanged. Published languages: English and Spanish.
 
 The portal notice supplements the main Artimex website notice, using the privacy contact already published there. It describes this repository’s account administration, authentication, CSV storage/transfer, cross-location super-administrator access, security logging, optional aggregate-only HF analysis, and actual retention mechanisms. It intentionally does not copy the public website’s Google Analytics or Olivia-chat disclosures into this portal.
 
@@ -24,3 +24,6 @@ Canonical text is committed under `legal/privacy/<version>.json`. `lib/privacy.m
 Artimex’s counsel/privacy owner should validate the final wording and business coverage against actual practices, including the legal operator, provider agreements and any service-provider restrictions, international processing arrangements, employer/restaurant roles, category-specific retention decisions, rights-request verification and response procedures, legal holds, and disclosures outside this application. The application does not implement those organizational duties merely by publishing a notice.
 
 No new sale/advertising use, automatic data deletion, universal retention period or automatic fulfillment of privacy requests is asserted. The main privacy contact receives requests outside this application. Live account/file/audit records currently rely on operational retention decisions; 14 daily database backups and the dashboard’s 10,000-event display limit are not a live-record deletion schedule. No claim of certified or guaranteed California compliance is made.
+
+
+The 2026-10-25.2 revision discloses the explicitly enrolled email-verification pilot, the O7 VPS mail service and recipient email-provider processing. Codes expire in ten minutes; that does not imply deletion of the message from a mailbox. It also replaces the seven-day provisional-password validity description with validity until successful activation or administrative reset/revocation. No acceptance records from an older version are rewritten as acceptance of the new one.

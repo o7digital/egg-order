@@ -1,4 +1,5 @@
-import { randomBytes, randomUUID, scryptSync } from 'node:crypto';
+import { temporaryCredential } from '../lib/credentials.mjs';
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { session, sameOrigin } from '../lib/auth.mjs';
 import { profileState, safeProfile } from '../lib/profiles.mjs';
@@ -33,14 +34,13 @@ export default async function handler(req,res) {
  const accountKey='portal:account:'+email,accountRaw=await command('GET',accountKey);
  let credentials=accountRaw&&JSON.parse(accountRaw),temporaryPassword;
  if(action==='create'||action==='reset-password') {
-  temporaryPassword='Egg-'+randomBytes(12).toString('base64url');const salt=randomBytes(16).toString('hex');
-  credentials={salt,hash:scryptSync(temporaryPassword,salt,64).toString('hex'),version:randomUUID(),mustChangePassword:true,expiresAt:Date.now()+7*86400000};
+  const generated=temporaryCredential();temporaryPassword=generated.password;credentials=generated.record;
  } else if(credentials&&email!==actor.email) credentials={...credentials,version:randomUUID()};
  const changes=[{key:'portal:profiles',expected:raw,value:JSON.stringify(profiles)}];
  if(credentials)changes.push({key:accountKey,expected:accountRaw,value:JSON.stringify(credentials)});
  const event=JSON.stringify({id:randomUUID(),at:new Date().toISOString(),type:'admin_'+action.replaceAll('-','_'),email:actor.email,restaurant:'',target:email,before,after:safeProfile(target)});
  if(!await command('MULTICAS',changes,event))return res.status(409).json({error:'An account was changed concurrently. Refresh and try again.'});
 
- return res.status(action==='create'?201:200).json({user:safeProfile(target),...(temporaryPassword?{temporaryPassword,expiresAt:new Date(credentials.expiresAt).toISOString()}:{})});
+ return res.status(action==='create'?201:200).json({user:safeProfile(target),...(temporaryPassword?{temporaryPassword,expiresAt:credentials.expiresAt?new Date(credentials.expiresAt).toISOString():null}:{})});
  } catch {return res.status(503).json({error:'Account administration unavailable. Refresh before retrying.'});}
 }

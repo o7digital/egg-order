@@ -342,5 +342,29 @@
   "The encoded data was not valid for encoding utf-8": {
     "en": "The CSV must use UTF-8 text encoding.",
     "es": "El CSV debe usar la codificación de texto UTF-8."
+  },
+  "Too many verification emails. Try again in 10 minutes.": {
+    "en": "Too many verification emails. Try again in 10 minutes.",
+    "es": "Demasiados correos de verificación. Inténtelo en 10 minutos."
+  },
+  "Verification email could not be sent. Contact Artimex.": {
+    "en": "Verification email could not be sent. Contact Artimex.",
+    "es": "No se pudo enviar el correo de verificación. Contacte a Artimex."
+  },
+  "Incorrect verification code.": {
+    "en": "Incorrect verification code.",
+    "es": "Código de verificación incorrecto."
+  },
+  "Verification expired. Sign in again to request a new code.": {
+    "en": "Verification expired. Sign in again to request a new code.",
+    "es": "La verificación venció. Inicie sesión de nuevo para solicitar otro código."
+  },
+  "Too many incorrect codes. Sign in again to request a new code.": {
+    "en": "Too many incorrect codes. Sign in again to request a new code.",
+    "es": "Demasiados códigos incorrectos. Inicie sesión de nuevo para solicitar otro."
+  },
+  "Enter the six-digit verification code.": {
+    "en": "Enter the six-digit verification code.",
+    "es": "Ingrese el código de verificación de seis dígitos."
   }
 }
