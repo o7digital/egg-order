@@ -7,6 +7,8 @@ import { join } from 'node:path';
 import account from '../api/account.mjs';
 import dashboard from '../api/dashboard.mjs';
 import administration from '../api/admin-users.mjs';
+import guide from '../api/guide.mjs';
+import { articles } from '../lib/guide-content.mjs';
 import { buildReport } from '../lib/reports.mjs';
 import { directory } from '../lib/directory.mjs';
 import { scopedUser, session } from '../lib/auth.mjs';
@@ -48,6 +50,14 @@ try {
  const admin=directory.find(u=>u.role==='superuser');await command('SET','portal:account:'+admin.email,JSON.stringify({salt:'test',hash:scryptSync(newPassword,'test',64).toString('hex'),version:'admin',mustChangePassword:false}));
  r=await request({email:admin.email,password:newPassword});denied=res();await dashboard({method:'GET',headers:{cookie:r.headers['Set-Cookie']}},denied);assert.equal(denied.code,200);assert.equal(denied.body.locations.length,11);
  const adminHeaders={cookie:r.headers['Set-Cookie']};
+ const guideRequest=async(headers={},url='/api/guide')=>{const result=res();await guide({method:'GET',headers,url},result);return result;};
+ let help=await guideRequest();assert.equal(help.body.role,'guest');assert(help.body.articles.every(a=>!a.adminOnly));assert(!help.body.articles.some(a=>a.id==='upload'));
+ const adminGuide=await guideRequest(adminHeaders);assert.equal(adminGuide.body.role,'superuser');assert(adminGuide.body.articles.some(a=>a.id==='reset-password'));assert(adminGuide.body.articles.some(a=>a.id==='upload'));
+ const esGuide=await guideRequest(adminHeaders,'/api/guide?lang=es');assert.equal(esGuide.body.language,'es');assert(esGuide.body.articles.find(a=>a.id==='reset-password').title.startsWith('Restablezca'));
+ assert.deepEqual(adminGuide.body.articles.map(a=>a.id),esGuide.body.articles.map(a=>a.id));assert.equal(new Set(articles.map(a=>a.id)).size,articles.length);
+ for(const article of articles){assert(article.en.title&&article.es.title);assert.equal(article.en.blocks.length,article.es.blocks.length);}
+ help=res();await guide({method:'POST',headers:adminHeaders},help);assert.equal(help.code,405);
+
  const adminRequest=async body=>{const result=res();await administration({method:'POST',headers:adminHeaders,body},result);return result;};
  let result=res();await administration({method:'POST',headers,body:{action:'update',email:shared.email}},result);assert.equal(result.code,403);
  result=await adminRequest({action:'update',email:admin.email,name:admin.name,role:'manager',active:true,restaurants:['EGG Pacific']});assert.equal(result.code,400,'Self demotion blocked');
@@ -55,6 +65,9 @@ try {
  const created=await adminRequest({action:'create',email:'qa@example.com',name:'QA manager',role:'manager',active:true,restaurants:['EGG Pacific']});assert.equal(created.code,201);assert(created.body.temporaryPassword);assert(!JSON.stringify(created.body.user).includes('hash'));
  result=await request({email:'qa@example.com',password:created.body.temporaryPassword});assert.equal(result.body.mustChangePassword,true);
  result=await request({action:'change-password',newPassword:'QA-personal-password'},{cookie:result.headers['Set-Cookie']});assert.equal(result.code,200);const qaHeaders={cookie:result.headers['Set-Cookie']};assert.equal((await session({headers:qaHeaders})).restaurant,'EGG Pacific');
+ const managerHelp=await guideRequest(qaHeaders,'/api/guide?lang=es&role=superuser');assert.equal(managerHelp.body.role,'manager');assert(managerHelp.body.articles.some(a=>a.id==='upload'));assert(!managerHelp.body.articles.some(a=>a.adminOnly));assert(!JSON.stringify(managerHelp.body).includes('Restablezca el acceso de un usuario'));
+ assert(adminGuide.body.articles.length>managerHelp.body.articles.length);
+
  result=await adminRequest({action:'update',email:'qa@example.com',name:'QA manager',role:'manager',active:true,restaurants:['EGG Anaheim']});assert.equal(result.code,200);assert.equal(await session({headers:qaHeaders}),null,'Permission edits revoke previous sessions');
  result=await request({email:'qa@example.com',password:'QA-personal-password'});assert.equal(result.code,200);assert.equal(result.body.restaurant,'EGG Anaheim');
  result=await adminRequest({action:'update',email:'qa@example.com',name:'QA manager',role:'manager',active:false,restaurants:['EGG Anaheim']});assert.equal(result.code,200);

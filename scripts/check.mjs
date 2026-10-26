@@ -5,6 +5,8 @@ const html = await readFile('index.html', 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 new vm.Script(await readFile('assets/admin.js','utf8'));
+new vm.Script(await readFile('assets/guide.js','utf8'));
+assert((await readFile('guide.html','utf8')).includes('id="guideArticle"'));
 assert(html.includes('src="/assets/admin.js"'));
 assert(html.includes('id="uploadView"'));
 assert((await readFile('assets/admin.css','utf8')).includes('.console'));

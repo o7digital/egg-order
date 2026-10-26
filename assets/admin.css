@@ -123,3 +123,11 @@ body.admin-mode{background:#f0f2ee;color:#28392e}
  .admin-mode .console-table td,.admin-mode .console-table th{padding:15px}.admin-mode .console-chart-row{grid-template-columns:88px 1fr 25px;gap:10px;font-size:11px}
  .admin-mode .console-side-note{display:none}.admin-mode footer{margin:0 12px;padding:18px 5px;font-size:11px}
 }
+
+/* Contextual, bilingual guidance is available before and after sign-in. */
+.portal-guide-link{border:1px solid #dce4d3;border-radius:9px;padding:9px 13px;background:#fff;color:#566e46;font-size:12px;text-decoration:none;white-space:nowrap}
+.portal-guide-link:hover{background:#f0f5e7}.upload-guide-help{font-size:12px;color:#879475;margin:0 0 20px}.upload-guide-help a{color:#607d48;text-underline-offset:3px}
+.console-guide-link{display:flex;align-items:center;gap:11px;padding:12px;color:#cdd0c7;font-size:13px;text-decoration:none;border-radius:8px;line-height:1.5}
+.console-guide-link svg{width:18px;height:18px;flex-shrink:0}.console-guide-link:hover{background:#ffffff12;color:#fff}
+.admin-mode .console-guide-link{padding:13px 14px;gap:13px;min-height:48px;border-top:1px solid #ffffff12;margin-top:6px;color:#d1dbc6}
+@media(max-width:700px){.portal-guide-link{font-size:11px;padding:8px 10px}.console-guide-link{white-space:nowrap;flex-shrink:0;font-size:11px}.admin-mode .console-guide-link{padding:10px 12px;min-height:40px;gap:8px;border-top:0;border-left:1px solid #ffffff20;border-radius:0;margin:0}.console-guide-link svg{width:14px;height:14px}}
