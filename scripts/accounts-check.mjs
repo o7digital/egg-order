@@ -8,6 +8,8 @@ import account from '../api/account.mjs';
 import dashboard from '../api/dashboard.mjs';
 import administration from '../api/admin-users.mjs';
 import guide from '../api/guide.mjs';
+import privacy from '../api/privacy.mjs';
+import { PRIVACY_VERSION, PRIVACY_HASH, privacyFor } from '../lib/privacy.mjs';
 import { articles } from '../lib/guide-content.mjs';
 import { buildReport } from '../lib/reports.mjs';
 import { directory } from '../lib/directory.mjs';
@@ -27,13 +29,22 @@ try {
  let connected=false;for(let i=0;i<100;i++){try{await command('GET','portal:test');connected=true;break;}catch{await new Promise(r=>setTimeout(r,50));}}
  assert(connected,'SQLite test service failed to start');
  const res=()=>({headers:{},setHeader(k,v){this.headers[k]=v;},status(n){this.code=n;return this;},json(v){this.body=v;return this;}});
- const request=async(body,headers={})=>{const r=res();await account({method:'POST',headers,body},r);return r;};
+ const defaultAcknowledgment={acknowledged:true,version:PRIVACY_VERSION,hash:PRIVACY_HASH,language:'en'};
+ const request=async(body,headers={})=>{if(body.action==='change-password'&&!Object.hasOwn(body,'privacyAcknowledgment'))body={...body,privacyAcknowledgment:defaultAcknowledgment};const r=res();await account({method:'POST',headers,body},r);return r;};
  const email=shared.email,password='Temporary-test-password',version=randomUUID();
  await command('SET','portal:account:'+email,JSON.stringify({salt:'test',hash:scryptSync(password,'test',64).toString('hex'),version,mustChangePassword:true,expiresAt:Date.now()+60000}));
  let r=await request({email,password:'wrong'});assert.equal(r.code,401);
  r=await request({action:'setup',email});assert.equal(r.code,401); // Email reset removed.
  r=await request({email,password});assert.equal(r.code,200);assert.equal(r.body.mustChangePassword,true);
  const restricted={cookie:r.headers['Set-Cookie']};assert.equal(await session({headers:restricted}),null);
+ let notice=res();privacy({method:'GET',url:'/api/privacy?lang=es',headers:{}},notice);assert.equal(notice.code,200);assert.equal(notice.body.language,'es');assert.equal(notice.body.hash,PRIVACY_HASH);assert.equal(notice.headers['Cache-Control'],'no-store');assert.equal(notice.body.version,PRIVACY_VERSION);
+ assert.deepEqual(privacyFor('en').sections.map(s=>s.id),privacyFor('es').sections.map(s=>s.id));
+ let missing=await request({action:'change-password',newPassword:'Personal-long-password',privacyAcknowledgment:null},restricted);assert.equal(missing.code,422);assert.equal(missing.body.code,'PRIVACY_ACK_REQUIRED');
+ missing=await request({action:'change-password',newPassword:'Personal-long-password',privacyAcknowledgment:{...defaultAcknowledgment,acknowledged:false}},restricted);assert.equal(missing.code,422);
+ missing=await request({action:'change-password',newPassword:'Personal-long-password',privacyAcknowledgment:{...defaultAcknowledgment,version:'outdated'}},restricted);assert.equal(missing.code,409);assert.equal(missing.body.code,'PRIVACY_NOTICE_UPDATED');
+ missing=await request({action:'change-password',newPassword:'Personal-long-password',privacyAcknowledgment:{...defaultAcknowledgment,hash:'tampered'}},restricted);assert.equal(missing.code,409);
+ assert.equal(await command('GET','portal:privacy:'+email),null);assert.equal(JSON.parse(await command('GET','portal:account:'+email)).mustChangePassword,true,'Rejected acknowledgments must not activate an account');
+
  let denied=res();await dashboard({method:'GET',headers:restricted},denied);assert.equal(denied.code,403);
  r=await request({action:'change-password',newPassword:'short'},restricted);assert.equal(r.code,400);
  r=await request({action:'change-password',newPassword:password},restricted);assert.equal(r.code,400);
@@ -43,9 +54,11 @@ try {
  r=changed.find(r=>r.code===200);const headers={cookie:r.headers['Set-Cookie']};assert.equal((await session({headers})).email,email);
  r=await request({email,password});assert.equal(r.code,401);
  r=await request({email,password:newPassword});assert.equal(r.code,200);assert(!r.body.mustChangePassword);
+ const acknowledgment=JSON.parse(await command('GET','portal:privacy:'+email));assert.equal(acknowledgment.version,PRIVACY_VERSION);assert.equal(acknowledgment.noticeHash,PRIVACY_HASH);assert.equal(acknowledgment.language,'en');assert(acknowledgment.acknowledgedAt);assert(!JSON.stringify(acknowledgment).includes(newPassword));
+ assert.equal(JSON.parse(await command('GET','portal:privacy:'+email+':'+PRIVACY_VERSION)).noticeHash,PRIVACY_HASH);
  const stored=JSON.parse(await command('GET','portal:account:'+email));await command('SET','portal:account:'+email,JSON.stringify({...stored,version:randomUUID()}));assert.equal(await session({headers}),null);
  denied=res();await dashboard({method:'GET',headers:{}},denied);assert.equal(denied.code,403);
- const events=(await command('LRANGE','portal:events',0,100)).map(JSON.parse);assert(events.some(e=>e.type==='password_changed'));assert(events.every(e=>!JSON.stringify(e).includes(newPassword)));
+ const events=(await command('LRANGE','portal:events',0,100)).map(JSON.parse);assert(events.some(e=>e.type==='password_changed'&&e.privacyAcknowledgment?.noticeHash===PRIVACY_HASH));assert(events.some(e=>e.type==='privacy_acknowledged'));assert(events.every(e=>!JSON.stringify(e).includes(newPassword)));
  for(let i=0;i<11;i++)r=await request({email:'bad@example.com',password:'wrong'});assert.equal(r.code,429);
  const admin=directory.find(u=>u.role==='superuser');await command('SET','portal:account:'+admin.email,JSON.stringify({salt:'test',hash:scryptSync(newPassword,'test',64).toString('hex'),version:'admin',mustChangePassword:false}));
  r=await request({email:admin.email,password:newPassword});denied=res();await dashboard({method:'GET',headers:{cookie:r.headers['Set-Cookie']}},denied);assert.equal(denied.code,200);assert.equal(denied.body.locations.length,11);
@@ -78,5 +91,5 @@ try {
  const report=buildReport(fixture,directory,[{name:'EGG Pacific'},{name:'EGG Anaheim'}],{});assert.equal(report.summary.uploads,2);assert.equal(report.summary.rows,11);assert.equal(report.summary.errors,1);assert.equal(report.locations.find(l=>l.restaurant==='EGG Pacific').managers[0].name,'Karla Lopez');
  assert.equal(buildReport(fixture,directory,[{name:'EGG Pacific'}],{from:'2026-10-25',restaurant:'EGG Pacific'}).summary.uploads,1);
  process.env.ARTIMEX_PRODUCT_CATALOG='["SKU1"]';assert.equal((await anomalies(['SKU','Qty'],[['OTHER','2']]))[0].code,'UNKNOWN_PRODUCT');assert.deepEqual(await anomalies(['SKU','Qty'],[['SKU1','2']]),[]);
- console.log('SQLite, temporary credentials, GM statistics, account creation, role edits, suspension, reset, CSRF, session revocation and admin audit passed');
+ console.log('Versioned privacy acknowledgment, mandatory server validation, bilingual notice, atomic activation, SQLite, temporary credentials, GM statistics, account creation, role edits, suspension, reset, CSRF, session revocation and admin audit passed');
 } finally {server.kill();await new Promise(resolve=>server.once('exit',resolve));await rm(dir,{recursive:true,force:true});}

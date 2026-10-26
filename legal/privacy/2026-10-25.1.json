@@ -1,0 +1,206 @@
+{
+  "version": "2026-10-25.1",
+  "effectiveDate": "2026-10-25",
+  "source": {
+    "en": "https://www.artimexbakery.com/en/privacy-notice/",
+    "es": "https://www.artimexbakery.com/es/aviso-de-privacidad/"
+  },
+  "en": {
+    "title": "Portal Privacy Notice",
+    "subtitle": "Notice at collection for the Artimex restaurant upload portal",
+    "summary": "Artimex processes business account details, credentials, restaurant assignments, uploaded files and security records to provide and protect this portal. The portal is not configured for sale of personal information or cross-context behavioral advertising. Retention depends on the operational and legal criteria below.",
+    "acknowledgment": "I acknowledge receiving the Portal Privacy Notice. This acknowledgment does not waive my privacy rights or authorize advertising.",
+    "sections": [
+      {
+        "id": "scope",
+        "title": "1. Operator and scope",
+        "paragraphs": [
+          "Artimex Bakery, also presented as Artimex Artisan Mexican Bakery (Artimex, we, us), provides this portal at orderstogb.artimexbakery.com for authorized restaurant personnel and administrators. Privacy contact: Artimex Bakery Sales Department, 12764 Florence Avenue, Santa Fe Springs, CA 90670, United States; sales@artimex.com; 562-777-0924.",
+          "This notice supplements the Artimex website privacy notice for account provisioning, activation, authentication, CSV uploads, reporting and administrative activity in this portal. Separate employer notices and Artimex business processes outside this portal may also apply. The public website’s analytics and chat descriptions do not describe this portal."
+        ]
+      },
+      {
+        "id": "collection",
+        "title": "2. Notice at collection: information, purposes and retention",
+        "paragraphs": [
+          "Information comes from you, your authorized restaurant or company administrator, your browser/device and activity in the portal. An administrator may provision business contact details before you activate the account. Provide only information needed for your authorized work."
+        ],
+        "headers": [
+          "Category and examples",
+          "Purpose and recipients",
+          "Retention criteria"
+        ],
+        "rows": [
+          [
+            "Identifiers and professional details: name, work or account email, role, restaurant assignments and responsible GM names.",
+            "Provision accounts, apply permissions, identify the appropriate restaurant and coordinate operations. Accessible to authorized Artimex and restaurant-network administrators.",
+            "For the authorized business relationship and subsequent periods needed for account administration, legal obligations, security or disputes. Disabling an account does not automatically erase its records."
+          ],
+          [
+            "Authentication information: passwords submitted for verification, salted password hashes, account/session versions and session cookies. Account credentials can be sensitive personal information under applicable law.",
+            "Authenticate users, prevent unauthorized access and reset credentials. Plaintext passwords are not retained as account records or written to application audit events. Hosting and technical operators support these functions.",
+            "Normal sessions expire within eight hours; restricted activation sessions within ten minutes; temporary passwords expire after seven days. Password hashes and account versions remain until replaced or removed as part of account/security administration."
+          ],
+          [
+            "Commercial/professional upload information: CSV contents, order or product references, filenames, restaurant, file size, row counts, uploader and receipt records. Files may contain personal information supplied by the uploader.",
+            "Preview and deliver files to Artimex, review exceptions, produce operational reports and support the separate GlobalBake handoff. Authorized super administrators can review cross-location records and download retained files.",
+            "As needed to fulfill and reconcile the underlying transaction, maintain business records, investigate errors and meet applicable accounting, legal or dispute obligations. File movement for import and deletion of associated audit records are separate actions."
+          ],
+          [
+            "Network/activity information: IP address, browser/device information, request times, sign-ins, failed attempts, downloads, account and permission changes.",
+            "Operate hosting, secure the service, investigate incidents and provide access/accountability reports. Processed by hosting/technical providers and authorized administrators.",
+            "For operational accountability, incident investigation and applicable legal or claim requirements. The latest 10,000 events shown by the dashboard are a display limit, not an automatic deletion schedule."
+          ],
+          [
+            "Notice and privacy-request records: notice version and document fingerprint, language, acknowledgment time, account and relevant technical context; requests and verification correspondence received by Artimex.",
+            "Document delivery of this notice, handle rights requests, verify identity where appropriate and demonstrate required handling.",
+            "For the period needed to document the acknowledgment/request, its outcome and applicable compliance, dispute or legal-hold obligations."
+          ]
+        ]
+      },
+      {
+        "id": "sharing",
+        "title": "3. Access, providers and disclosures",
+        "paragraphs": [
+          "Access is role-based. General Managers use assigned restaurants. Authorized super administrators, including designated Artimex and El Gallo Giro administrators, can inspect network-wide accounts, uploads and access records. A shared email account has a shared audit identity.",
+          "Vercel hosts the portal and processes technical requests. Account, acknowledgment and audit records are stored on the VPS used for portal operations; CSV files are deposited on Artimex’s upload server. Authorized technical operators, including O7 Digital Group, may handle information to maintain these systems. Providers can process information in the United States or other countries where their infrastructure operates; this notice does not promise California-only storage.",
+          "If enabled, Hugging Face receives only aggregate CSV counts under the current implementation, not account emails or raw CSV cells. Its output is advisory. The portal does not use that output to make legal or similarly significant decisions about people.",
+          "Information may also be disclosed to comply with valid legal requirements, address fraud or security incidents, protect legal rights, obtain professional advice or complete a business transfer subject to applicable obligations. No email code service is used for account activation."
+        ]
+      },
+      {
+        "id": "retention",
+        "title": "4. Retention and safeguards",
+        "paragraphs": [
+          "The criteria in the collection table apply per information category. They are not a promise that disabling an account, resetting a password or accepting this notice deletes earlier records. Artimex determines the necessary duration from the business relationship, transaction status, applicable obligations, incidents, claims and legal holds. Contact the privacy contact for information associated with your account.",
+          "The current database backup process retains up to 14 daily backup copies. Expiry of a backup does not delete live records. Copies may persist in backups until their normal replacement cycle. Appropriate account controls, HTTPS and restricted operational access are used; no system can guarantee absolute security. Uploads should not include unnecessary customer details, payment data, government identifiers, health information or other sensitive data."
+        ]
+      },
+      {
+        "id": "cookies",
+        "title": "5. Cookies, advertising and privacy signals",
+        "paragraphs": [
+          "The portal uses a necessary secure session cookie and browser storage for the English/Spanish preference. Its application code does not include Google Analytics, advertising pixels or cross-site advertising tracking. Hosting/security providers still process necessary technical requests.",
+          "For the categories described above, this portal is not configured to sell personal information or share it for cross-context behavioral advertising. It does not use sensitive information to infer personal characteristics. The application does not alter these operations in response to the older Do Not Track signal because cross-site advertising tracking is not performed. A Global Privacy Control signal does not disable necessary authentication; there is no advertising sale/sharing process to switch off in this implementation. Materially different processing requires the applicable notice and choices before it begins."
+        ]
+      },
+      {
+        "id": "rights",
+        "title": "6. California privacy rights",
+        "paragraphs": [
+          "Where the California Consumer Privacy Act, as amended by the California Privacy Rights Act, applies to Artimex and the processing, California residents may request access/knowledge, portability, correction or deletion; opt out of sale/advertising sharing; limit qualifying sensitive-information uses; and exercise rights without unlawful discrimination or retaliation. Exceptions and verification requirements may apply. Posting this notice does not establish that every CCPA provision applies to every interaction.",
+          "Request by email at sales@artimex.com (subject: Artimex portal privacy request), telephone at 562-777-0924 or the postal address above. No portal account or acknowledgment is required to submit a request. An authorized agent may act with appropriate authority. Provide enough information to locate the relevant records; do not send passwords.",
+          "For covered requests to know, correct or delete, the applicable process generally acknowledges receipt within ten business days and responds within 45 calendar days; an allowed extension is explained. Applicable advertising opt-outs and sensitive-information limitations follow their separate legal deadlines. Contact the California Privacy Protection Agency for information or complaints."
+        ]
+      },
+      {
+        "id": "acknowledgment",
+        "title": "7. Acknowledgment, updates and other notices",
+        "paragraphs": [
+          "At account activation or a temporary-password reset, the portal asks you to acknowledge receiving this notice. It records the version, document fingerprint, language and time with the account and relevant security context. The box is not preselected. This records receipt; it is not marketing consent, consent to sale/sharing or a waiver of privacy rights.",
+          "If you do not acknowledge, account activation cannot be completed through that form. You can still read this notice and contact Artimex about privacy or access. Where a separate consent is legally required for a new purpose, this acknowledgment does not replace it.",
+          "Updates identify a new version and effective date. Material changes and any legally required choices will be communicated as applicable. The archived document linked from the acknowledgment identifies what was presented. Consult the main Artimex privacy notice for the public website and other contact information."
+        ]
+      }
+    ]
+  },
+  "es": {
+    "title": "Aviso de privacidad del portal",
+    "subtitle": "Aviso de recopilación de datos del portal de carga de restaurantes Artimex",
+    "summary": "Artimex trata datos de cuentas de negocio, credenciales, restaurantes asignados, archivos y registros de seguridad para prestar y proteger este portal. El portal no está configurado para vender información personal ni compartirla con fines de publicidad conductual entre contextos. La conservación depende de los criterios operativos y legales siguientes.",
+    "acknowledgment": "Reconozco haber recibido el Aviso de privacidad del portal. Este reconocimiento no implica renunciar a mis derechos de privacidad ni autorizar publicidad.",
+    "sections": [
+      {
+        "id": "scope",
+        "title": "1. Responsable y alcance",
+        "paragraphs": [
+          "Artimex Bakery, también presentada como Artimex Artisan Mexican Bakery (Artimex, nosotros), ofrece este portal en orderstogb.artimexbakery.com para personal y administradores autorizados de restaurantes. Contacto de privacidad: Artimex Bakery Sales Department, 12764 Florence Avenue, Santa Fe Springs, CA 90670, Estados Unidos; sales@artimex.com; 562-777-0924.",
+          "Este aviso complementa el del sitio Artimex para la creación, activación y autenticación de cuentas, cargas CSV, reportes y actividad administrativa de este portal. Pueden aplicar otros avisos de su empleador o procesos de Artimex. Las descripciones de analítica y chat del sitio público no describen este portal."
+        ]
+      },
+      {
+        "id": "collection",
+        "title": "2. Aviso de recopilación: datos, finalidades y conservación",
+        "paragraphs": [
+          "Los datos proceden de usted, de su administrador autorizado del restaurante o empresa, de su navegador/dispositivo y de la actividad del portal. Un administrador puede registrar sus datos de negocio antes de que active la cuenta. Proporcione solo lo necesario para su trabajo autorizado."
+        ],
+        "headers": [
+          "Categoría y ejemplos",
+          "Finalidad y destinatarios",
+          "Criterios de conservación"
+        ],
+        "rows": [
+          [
+            "Identificadores y datos profesionales: nombre, correo de trabajo o cuenta, rol, restaurantes asignados y gerentes responsables.",
+            "Crear cuentas, aplicar permisos, identificar el restaurante y coordinar operaciones. Accesibles a administradores autorizados de Artimex y de la red de restaurantes.",
+            "Durante la relación de negocio autorizada y los períodos posteriores necesarios para administrar cuentas, atender obligaciones legales, seguridad o controversias. Desactivar una cuenta no elimina sus registros automáticamente."
+          ],
+          [
+            "Autenticación: contraseñas enviadas para verificación, hashes de contraseña con sal, versiones de cuenta/sesión y cookies de sesión. Las credenciales pueden ser información personal sensible conforme a la ley aplicable.",
+            "Autenticar, impedir accesos no autorizados y restablecer credenciales. Las contraseñas en texto claro no se conservan como registros de cuenta ni se escriben en eventos de auditoría. Los operadores técnicos y de alojamiento apoyan estas funciones.",
+            "Las sesiones normales vencen en un máximo de ocho horas; las restringidas de activación en diez minutos; las contraseñas temporales en siete días. Los hashes y versiones permanecen hasta su reemplazo o eliminación en la administración de cuentas/seguridad."
+          ],
+          [
+            "Datos comerciales/profesionales: contenido CSV, referencias de pedido o producto, nombres de archivo, restaurante, tamaño, filas, remitente y comprobantes. Los archivos pueden contener datos personales incluidos por quien los carga.",
+            "Revisar y entregar archivos a Artimex, analizar incidencias, generar reportes y apoyar la entrega separada a GlobalBake. Los superadministradores autorizados pueden revisar registros de todas las ubicaciones y descargar archivos conservados.",
+            "Lo necesario para cumplir y conciliar la transacción, conservar registros de negocio, investigar errores y atender obligaciones contables, legales o controversias. Mover un archivo para importarlo y eliminar su auditoría son acciones separadas."
+          ],
+          [
+            "Red y actividad: IP, navegador/dispositivo, horas de solicitud, accesos, intentos fallidos, descargas y cambios de cuentas o permisos.",
+            "Prestar alojamiento, proteger el servicio, investigar incidentes y mostrar reportes de acceso y responsabilidad. Tratados por proveedores técnicos/de alojamiento y administradores autorizados.",
+            "Para la responsabilidad operativa, investigación de incidentes y requisitos legales o reclamaciones. Los últimos 10.000 eventos visibles son un límite de presentación, no un calendario de eliminación."
+          ],
+          [
+            "Aviso y solicitudes de privacidad: versión y huella del documento, idioma, fecha de reconocimiento, cuenta y contexto técnico pertinente; solicitudes y correspondencia de verificación recibidas por Artimex.",
+            "Documentar la entrega del aviso, atender derechos, verificar identidad cuando corresponda y demostrar la gestión requerida.",
+            "El período necesario para documentar el reconocimiento/solicitud, su resultado y las obligaciones aplicables de cumplimiento, controversia o conservación legal."
+          ]
+        ]
+      },
+      {
+        "id": "sharing",
+        "title": "3. Accesos, proveedores y divulgaciones",
+        "paragraphs": [
+          "El acceso depende del rol. Los gerentes utilizan sus restaurantes asignados. Los superadministradores autorizados, incluidos los designados por Artimex y El Gallo Giro, pueden revisar cuentas, cargas y accesos de toda la red. Un correo compartido tiene una identidad compartida en auditoría.",
+          "Vercel aloja el portal y procesa solicitudes técnicas. Las cuentas, reconocimientos y auditoría se almacenan en el VPS utilizado para las operaciones; los CSV se depositan en el servidor de cargas de Artimex. Operadores técnicos autorizados, incluido O7 Digital Group, pueden tratar datos para mantener estos sistemas. Los proveedores pueden procesarlos en Estados Unidos u otros países donde opere su infraestructura; no se promete almacenamiento exclusivo en California.",
+          "Si se habilita Hugging Face, la implementación actual solo envía cantidades agregadas del CSV, no correos de cuentas ni celdas originales. Su resultado es orientativo. El portal no lo usa para tomar decisiones sobre personas con efectos legales o de importancia similar.",
+          "También pueden divulgarse datos para cumplir requerimientos legales válidos, atender fraude o incidentes, proteger derechos, obtener asesoramiento profesional o realizar una transferencia empresarial sujeta a obligaciones aplicables. La activación no utiliza un servicio de códigos por correo."
+        ]
+      },
+      {
+        "id": "retention",
+        "title": "4. Conservación y protección",
+        "paragraphs": [
+          "Los criterios de la tabla se aplican por categoría. No prometen que desactivar una cuenta, restablecer una contraseña o reconocer este aviso elimine registros anteriores. Artimex determina la duración necesaria según la relación de negocio, estado de la transacción, obligaciones aplicables, incidentes, reclamaciones y órdenes de conservación. Consulte al contacto de privacidad sobre los registros de su cuenta.",
+          "El proceso actual conserva hasta 14 copias diarias de respaldo de la base. El vencimiento de un respaldo no elimina los registros activos. Pueden permanecer copias hasta su reemplazo habitual. Se utilizan controles de acceso, HTTPS y accesos operativos restringidos; ningún sistema garantiza seguridad absoluta. No incluya datos innecesarios de clientes, pagos, identificaciones oficiales, salud u otros datos sensibles en las cargas."
+        ]
+      },
+      {
+        "id": "cookies",
+        "title": "5. Cookies, publicidad y señales de privacidad",
+        "paragraphs": [
+          "El portal usa una cookie segura necesaria para la sesión y almacenamiento del navegador para la preferencia English/Español. Su código no incorpora Google Analytics, píxeles publicitarios ni seguimiento publicitario entre sitios. Los proveedores de alojamiento/seguridad siguen procesando solicitudes técnicas necesarias.",
+          "Para las categorías descritas, este portal no está configurado para vender datos personales ni compartirlos para publicidad conductual entre contextos. No usa datos sensibles para inferir características personales. La aplicación no modifica estas operaciones ante la antigua señal Do Not Track porque no realiza seguimiento publicitario entre sitios. Una señal Global Privacy Control no desactiva la autenticación necesaria; esta implementación no tiene una operación de venta/uso publicitario que desactivar. Un tratamiento sustancialmente diferente requiere antes los avisos y opciones aplicables."
+        ]
+      },
+      {
+        "id": "rights",
+        "title": "6. Derechos de privacidad de California",
+        "paragraphs": [
+          "Cuando la California Consumer Privacy Act, modificada por la California Privacy Rights Act, aplique a Artimex y al tratamiento, los residentes de California pueden solicitar conocimiento/acceso, portabilidad, corrección o eliminación; excluir venta/uso publicitario compartido; limitar ciertos usos de datos sensibles; y ejercer derechos sin discriminación o represalias ilegales. Pueden existir excepciones y verificación. Publicar el aviso no establece que todas las disposiciones apliquen a cada interacción.",
+          "Solicite por correo a sales@artimex.com (asunto: Artimex portal privacy request), teléfono 562-777-0924 o la dirección postal indicada. No necesita cuenta ni reconocer este aviso para presentar una solicitud. Puede actuar un agente con autoridad apropiada. Proporcione datos suficientes para localizar los registros; no envíe contraseñas.",
+          "Para solicitudes cubiertas de conocimiento, corrección o eliminación, el procedimiento aplicable generalmente acusa recibo en diez días hábiles y responde en 45 días naturales; se explica una prórroga permitida. Las exclusiones publicitarias y limitaciones de datos sensibles tienen plazos legales propios. Puede consultar o presentar quejas ante la California Privacy Protection Agency."
+        ]
+      },
+      {
+        "id": "acknowledgment",
+        "title": "7. Reconocimiento, cambios y otros avisos",
+        "paragraphs": [
+          "Al activar una cuenta o restablecer una contraseña temporal, se solicita reconocer la recepción del aviso. Se registran versión, huella del documento, idioma y fecha con la cuenta y el contexto de seguridad pertinente. La casilla no está preseleccionada. Registra recepción, no consentimiento publicitario, autorización de venta/uso compartido ni renuncia a derechos.",
+          "Sin ese reconocimiento no puede completarse la activación en ese formulario. Puede leer el aviso y contactar a Artimex sobre privacidad o acceso. Si una finalidad nueva requiere consentimiento separado, este reconocimiento no lo sustituye.",
+          "Las actualizaciones identifican versión y fecha de vigencia nuevas. Se comunicarán cambios sustanciales y opciones legalmente requeridas cuando corresponda. El documento archivado enlazado desde el reconocimiento identifica lo presentado. Consulte el aviso principal de Artimex para el sitio público y otros datos de contacto."
+        ]
+      }
+    ]
+  }
+}

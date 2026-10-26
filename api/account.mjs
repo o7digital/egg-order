@@ -1,3 +1,4 @@
+import { PRIVACY_VERSION, PRIVACY_HASH } from '../lib/privacy.mjs';
 import { randomUUID, randomBytes, scryptSync } from 'node:crypto';
 import { profiles } from '../lib/profiles.mjs';
 import { command, audit } from '../lib/store.mjs';
@@ -20,13 +21,27 @@ export default async function handler(req,res) {
   if(!user) return res.status(401).json({error:'Sign in again with your temporary password.'});
   const raw=await command('GET','portal:account:'+user.email),stored=raw&&JSON.parse(raw);
   if(!stored||!stored.mustChangePassword||stored.version!==data.version||stored.expiresAt<Date.now()) return res.status(401).json({error:'Temporary password expired or already used.'});
+  const acknowledgment=req.body.privacyAcknowledgment;
+  const spanish=req.headers['x-portal-language']==='es';
+  if(acknowledgment?.acknowledged!==true||!['en','es'].includes(acknowledgment?.language))return res.status(422).json({code:'PRIVACY_ACK_REQUIRED',error:spanish?'Reconozca la recepción del aviso de privacidad antes de activar la cuenta.':'Acknowledge receipt of the privacy notice before activating the account.'});
+  if(acknowledgment.version!==PRIVACY_VERSION||acknowledgment.hash!==PRIVACY_HASH)return res.status(409).json({code:'PRIVACY_NOTICE_UPDATED',error:spanish?'El aviso ha cambiado. Lea la versión actual y marque la casilla de nuevo.':'The notice has changed. Review the current version and check the acknowledgment again.'});
   const password=req.body.newPassword;
   if(typeof password!=='string'||password.length<12||password.length>256) return res.status(400).json({error:'Choose a new password of 12–256 characters.'});
   if(checkPassword(password,stored)) return res.status(400).json({error:'Choose a different password from your temporary password.'});
   const salt=randomBytes(16).toString('hex'),version=randomUUID();
-  const changed=await command('CAS','portal:account:'+user.email,raw,JSON.stringify({salt,hash:scryptSync(password,salt,64).toString('hex'),version,mustChangePassword:false}));
-  if(!changed) return res.status(409).json({error:'Account already changed. Please sign in again.'});
-  await audit('password_changed',user);await audit('login',user,access(req));
+  const noticeKey='portal:privacy:'+user.email,versionKey=noticeKey+':'+PRIVACY_VERSION;
+  const [previous,previousVersion]=await Promise.all([command('GET',noticeKey),command('GET',versionKey)]);
+  const at=new Date().toISOString(),context=access(req);
+  const acknowledgmentRecord={email:user.email,version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at,firstAcknowledgedAt:previousVersion?JSON.parse(previousVersion).firstAcknowledgedAt:at,method:'temporary_password_activation',...context};
+  const event=JSON.stringify({id:randomUUID(),at,type:'password_changed',email:user.email,restaurant:user.restaurant||'',privacyAcknowledgment:{version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at}});
+  const changed=await command('MULTICAS',[
+   {key:'portal:account:'+user.email,expected:raw,value:JSON.stringify({salt,hash:scryptSync(password,salt,64).toString('hex'),version,mustChangePassword:false})},
+   {key:noticeKey,expected:previous,value:JSON.stringify(acknowledgmentRecord)},
+   {key:versionKey,expected:previousVersion,value:JSON.stringify(acknowledgmentRecord)}
+  ],event);
+  if(!changed)return res.status(409).json({error:'Account already changed. Please sign in again.'});
+  await audit('privacy_acknowledged',user,{version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,...context}).catch(()=>{});
+  await audit('login',user,context).catch(()=>{});
   return issue(res,user,version);
  }
  const email=typeof req.body?.email==='string'?req.body.email.trim().toLowerCase():'';

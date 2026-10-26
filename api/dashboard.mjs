@@ -15,7 +15,9 @@ export default async function handler(req,res) {
  const events=(await command('LRANGE','portal:events',0,9999)).map(JSON.parse).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
  const accounts=await Promise.all((await profiles()).map(async u=>{
   const raw=await command('GET','portal:account:'+u.email),credentials=raw&&JSON.parse(raw);
-  return {...safeProfile(u),status:u.active===false?'disabled':!credentials?'unprovisioned':credentials.mustChangePassword?(credentials.expiresAt<Date.now()?'expired':'invited'):'active',lastLogin:events.find(e=>e.type==='login'&&e.email===u.email)?.at||null};
+  const privacyRaw=await command('GET','portal:privacy:'+u.email),record=privacyRaw&&JSON.parse(privacyRaw);
+  const privacy=record?{version:record.version,acknowledgedAt:record.acknowledgedAt,language:record.language,noticeHash:record.noticeHash}:null;
+  return {...safeProfile(u),privacy,status:u.active===false?'disabled':!credentials?'unprovisioned':credentials.mustChangePassword?(credentials.expiresAt<Date.now()?'expired':'invited'):'active',lastLogin:events.find(e=>e.type==='login'&&e.email===u.email)?.at||null};
  }));
  const report=buildReport(events,accounts,locations,filter);
  res.status(200).json({...report,accounts,allLocations:locations,filter,generatedAt:new Date().toISOString(),historyLimit:10000,historyLimited:events.length===10000,integration:{hf:!!(process.env.HF_TOKEN&&process.env.HF_MODEL),catalogue:!!process.env.ARTIMEX_PRODUCT_CATALOG,globalBake:false}});
