@@ -5,6 +5,7 @@ const html = await readFile('index.html', 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 new vm.Script(await readFile('assets/admin.js','utf8'));
+new vm.Script(await readFile('assets/schedule.js','utf8'));
 new vm.Script(await readFile('assets/guide.js','utf8'));
 new vm.Script(await readFile('assets/privacy.js','utf8'));
 assert(html.includes('id="privacyAcknowledged" type="checkbox" required disabled'));

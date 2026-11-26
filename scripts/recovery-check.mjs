@@ -105,9 +105,13 @@ try {
   await command('SET', key, JSON.stringify({ ...expired, exp: Date.now() - 1 }));
   assert.equal((await verifyCode(requested, expiredCode)).code, 401);
 
-  await resetLimits(); const beforeLimit = (await mail()).length;
-  for (let i = 0; i < 4; i++) assert.equal((await request()).code, 200);
-  assert.equal((await mail()).length, beforeLimit + 3, 'Account email flooding is limited without revealing account state');
+  // Keep this multi-request assertion in one limit window even at a ten-minute boundary.
+  const realNow = Date.now, rateTime = Date.now(); Date.now = () => rateTime;
+  try {
+    await resetLimits(); const beforeLimit = (await mail()).length;
+    for (let i = 0; i < 4; i++) assert.equal((await request()).code, 200);
+    assert.equal((await mail()).length, beforeLimit + 3, 'Account email flooding is limited without revealing account state');
+  } finally { Date.now = realNow; }
   await command('SET', `portal:recovery-ip:unknown:${Math.floor(Date.now() / 600000)}`, '20');
   assert.equal((await request()).code, 429);
 
