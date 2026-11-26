@@ -1,5 +1,6 @@
 import { cancelEmailChallenge } from '../lib/email-2fa.mjs';
 import { cancelPasswordRecovery, clearRecoveryCookie } from '../lib/password-recovery.mjs';
+import { cancelAuthenticatorChallenge, clearAuthenticatorCookie } from '../lib/authenticator.mjs';
 import { audit } from '../lib/store.mjs';
 import account from './account.mjs';
 import { localizeResponse } from '../lib/locale.mjs';
@@ -14,9 +15,10 @@ export default async function handler(req, res) {
   if (req.method === 'DELETE') {
     await cancelEmailChallenge(req).catch(()=>{});
     await cancelPasswordRecovery(req).catch(()=>{});
+    await cancelAuthenticatorChallenge(req).catch(()=>{});
     const user=await session(req);
     if(user && process.env.PORTAL_ACCOUNTS_ENABLED === 'true') await audit('logout',user).catch(()=>{});
-    res.setHeader('Set-Cookie', ['artimex_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0','artimex_email_challenge=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0',clearRecoveryCookie()]); return res.status(200).json({ ok: true });
+    res.setHeader('Set-Cookie', ['artimex_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0','artimex_email_challenge=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0',clearRecoveryCookie(),clearAuthenticatorCookie()]); return res.status(200).json({ ok: true });
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST, DELETE'); return res.status(405).json({ error: 'Méthode non autorisée.' }); }
   if (!process.env.ARTIMEX_SESSION_SECRET || !users().length) return res.status(503).json({ error: 'Connexion non configurée.' });

@@ -34,7 +34,7 @@ export default async function handler(req,res) {
  const accountKey='portal:account:'+email,accountRaw=await command('GET',accountKey);
  let credentials=accountRaw&&JSON.parse(accountRaw),temporaryPassword;
  if(action==='create'||action==='reset-password') {
-  const generated=temporaryCredential();temporaryPassword=generated.password;credentials=generated.record;
+  const generated=temporaryCredential();temporaryPassword=generated.password;credentials={...generated.record,...(credentials?.authenticatorId?{authenticatorId:credentials.authenticatorId}:{})};
  } else if(credentials&&email!==actor.email) credentials={...credentials,version:randomUUID()};
  const changes=[{key:'portal:profiles',expected:raw,value:JSON.stringify(profiles)}];
  if(credentials)changes.push({key:accountKey,expected:accountRaw,value:JSON.stringify(credentials)});

@@ -6,13 +6,16 @@ import { profiles } from '../lib/profiles.mjs';
 import { command, audit } from '../lib/store.mjs';
 import { sameOrigin, checkPassword, verify } from '../lib/auth.mjs';
 import { recoveryGrant, clearRecoveryCookie } from '../lib/password-recovery.mjs';
+import { authenticatorSettings } from '../lib/authenticator.mjs';
 const cookie=(req)=>(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('artimex_session='))?.slice(16);
 export default async function handler(req,res) {
  res.setHeader('Cache-Control','no-store');
- if(req.method!=='POST') return res.status(405).json({error:'Method not allowed.'});
+ const securityStatus=req.method==='GET'&&new URL(req.url||'/api/account','https://portal.local').searchParams.get('action')==='authenticator-status';
+ if(req.method!=='POST'&&!securityStatus) return res.status(405).json({error:'Method not allowed.'});
  if(!sameOrigin(req)) return res.status(403).json({error:'Request origin not allowed.'});
  if(process.env.PORTAL_ACCOUNTS_ENABLED!=='true') return res.status(503).json({error:'Account provisioning is not enabled yet.'});
  try {
+ if(securityStatus||String(req.body?.action||'').startsWith('authenticator-'))return await authenticatorSettings(req,res);
  if(req.body?.action==='change-password') {
   const data=verify(cookie(req));
   const user=data?.type==='password_change'&&(await profiles()).find(u=>u.email===data.email&&u.active!==false);
@@ -20,6 +23,7 @@ export default async function handler(req,res) {
   const raw=await command('GET','portal:account:'+user.email),stored=raw&&JSON.parse(raw);
   const recovery=data.recovery?await recoveryGrant(data):null;
   if(!stored||stored.version!==data.version||(data.recovery?!recovery:!stored.mustChangePassword||temporaryExpired(stored))) return res.status(401).json({error:'Temporary password expired or already used.'});
+  if(stored.authenticatorId&&!data.recovery&&data.authenticatorId!==stored.authenticatorId)return res.status(401).json({error:'Sign in again with your temporary password.'});
   const acknowledgment=req.body.privacyAcknowledgment;
   const spanish=req.headers['x-portal-language']==='es';
   if(acknowledgment?.acknowledged!==true||!['en','es'].includes(acknowledgment?.language))return res.status(422).json({code:'PRIVACY_ACK_REQUIRED',error:spanish?'Reconozca la recepción del aviso de privacidad antes de activar la cuenta.':'Acknowledge receipt of the privacy notice before activating the account.'});
@@ -34,7 +38,7 @@ export default async function handler(req,res) {
   const acknowledgmentRecord={email:user.email,version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at,firstAcknowledgedAt:previousVersion?JSON.parse(previousVersion).firstAcknowledgedAt:at,method:data.recovery?'password_recovery':'temporary_password_activation',...context};
   const event=JSON.stringify({id:randomUUID(),at,type:'password_changed',email:user.email,restaurant:user.restaurant||'',privacyAcknowledgment:{version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at}});
   const changed=await command('MULTICAS',[
-   {key:'portal:account:'+user.email,expected:raw,value:JSON.stringify({salt,hash:scryptSync(password,salt,64).toString('hex'),version,mustChangePassword:false})},
+   {key:'portal:account:'+user.email,expected:raw,value:JSON.stringify({salt,hash:scryptSync(password,salt,64).toString('hex'),version,mustChangePassword:false,...(stored.authenticatorId?{authenticatorId:stored.authenticatorId}:{})})},
    {key:noticeKey,expected:previous,value:JSON.stringify(acknowledgmentRecord)},
    {key:versionKey,expected:previousVersion,value:JSON.stringify(acknowledgmentRecord)},
    ...(recovery||[])
@@ -49,7 +53,7 @@ export default async function handler(req,res) {
    return res.status(200).json({passwordReset:true});
   }
   await audit('login',user,context).catch(()=>{});
-  return await issueAccess(req,res,user,version,false,data.mfa===true);
+  return await issueAccess(req,res,user,version,false,data.mfa===true,data.authenticatorId);
  }
  const email=typeof req.body?.email==='string'?req.body.email.trim().toLowerCase():'';
  if(!email||email.length>254||typeof req.body.password!=='string'||req.body.password.length>256) return res.status(401).json({error:'Incorrect email address or password.'});
@@ -62,7 +66,7 @@ export default async function handler(req,res) {
  if(!stored||!checkPassword(req.body.password,stored)||(stored.mustChangePassword&&temporaryExpired(stored))) {
   await audit('login_failed',user||{email},access(req));return res.status(401).json({error:'Incorrect email address or password, or temporary password expired.'});
  }
- if(!requiresEmail2fa(user.email))await audit(stored.mustChangePassword?'temporary_login':'login',user,access(req));
+ if(!requiresEmail2fa(user.email)&&!stored.authenticatorId)await audit(stored.mustChangePassword?'temporary_login':'login',user,access(req));
  return await issueAccess(req,res,user,stored.version,stored.mustChangePassword);
  } catch {return res.status(503).json({error:'Account service unavailable. Contact Artimex.'});}
 }
