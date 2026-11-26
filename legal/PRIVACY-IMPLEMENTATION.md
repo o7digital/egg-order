@@ -27,3 +27,7 @@ No new sale/advertising use, automatic data deletion, universal retention period
 
 
 The 2026-10-25.2 revision discloses the explicitly enrolled email-verification pilot, the O7 VPS mail service and recipient email-provider processing. Codes expire in ten minutes; that does not imply deletion of the message from a mailbox. It also replaces the seven-day provisional-password validity description with validity until successful activation or administrative reset/revocation. No acceptance records from an older version are rewritten as acceptance of the new one.
+
+## Password recovery (2026-11-25)
+
+The existing notice already covers authentication, email verification, credential resets and security records. The new public recovery flow uses the registered account email and the same password hash, account version and privacy acknowledgment records. It does not modify the archived notices or backfill acknowledgments. Recovery challenges store an HMAC digest (never the plaintext code), account email/version, expiration, attempt count and consumption flags under a ten-minute SQLite TTL; atomic updates retain that TTL. Request counters expire after 660 seconds. Recovery audit events follow the existing audit retention limitations. The reset and confirmation emails pass through the existing Mailcow relay and recipient mailbox; confirmation emails contain no password.

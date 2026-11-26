@@ -366,5 +366,93 @@
   "Enter the six-digit verification code.": {
     "en": "Enter the six-digit verification code.",
     "es": "Ingrese el código de verificación de seis dígitos."
+  },
+  "Forgot password?": {
+    "en": "Forgot password?",
+    "es": "¿Olvidó su contraseña?"
+  },
+  "Account email address": {
+    "en": "Account email address",
+    "es": "Correo electrónico de la cuenta"
+  },
+  "Reset your password": {
+    "en": "Reset your password",
+    "es": "Restablezca su contraseña"
+  },
+  "Recover access using your account email address.": {
+    "en": "Recover access using your account email address.",
+    "es": "Recupere el acceso con el correo electrónico de su cuenta."
+  },
+  "We will email you a code to choose a new password. Your current password stays valid until you save the new one.": {
+    "en": "We will email you a code to choose a new password. Your current password stays valid until you save the new one.",
+    "es": "Le enviaremos un código por correo para elegir una contraseña nueva. Su contraseña actual seguirá vigente hasta que guarde la nueva."
+  },
+  "Send reset code": {
+    "en": "Send reset code",
+    "es": "Enviar código de recuperación"
+  },
+  "Sending reset code…": {
+    "en": "Sending reset code…",
+    "es": "Enviando código de recuperación…"
+  },
+  "No access to your mailbox? Contact IT:": {
+    "en": "No access to your mailbox? Contact IT:",
+    "es": "¿No tiene acceso a su correo? Contacte a TI:"
+  },
+  "If this account is active, a reset code will be sent to its email address. Check your inbox and spam, or contact IT.": {
+    "en": "If this account is active, a reset code will be sent to its email address. Check your inbox and spam, or contact IT.",
+    "es": "Si esta cuenta está activa, se enviará un código de recuperación a su correo. Revise su bandeja de entrada y spam, o contacte a TI."
+  },
+  "Request another reset code": {
+    "en": "Request another reset code",
+    "es": "Solicitar otro código de recuperación"
+  },
+  "Email verified. Choose your new password below.": {
+    "en": "Email verified. Choose your new password below.",
+    "es": "Correo verificado. Elija su nueva contraseña a continuación."
+  },
+  "At least 12 characters. Choose a password different from your current password.": {
+    "en": "At least 12 characters. Choose a password different from your current password.",
+    "es": "Al menos 12 caracteres. Elija una contraseña diferente de la actual."
+  },
+  "Save new password": {
+    "en": "Save new password",
+    "es": "Guardar nueva contraseña"
+  },
+  "Your password has been reset. Sign in with your new password.": {
+    "en": "Your password has been reset. Sign in with your new password.",
+    "es": "Su contraseña se ha restablecido. Inicie sesión con su nueva contraseña."
+  },
+  "Password recovery expired. Request a new reset code.": {
+    "en": "Password recovery expired. Request a new reset code.",
+    "es": "La recuperación ha vencido. Solicite otro código de recuperación."
+  },
+  "Too many incorrect codes. Request a new reset code.": {
+    "en": "Too many incorrect codes. Request a new reset code.",
+    "es": "Demasiados códigos incorrectos. Solicite otro código de recuperación."
+  },
+  "Enter a valid email address.": {
+    "en": "Enter a valid email address.",
+    "es": "Ingrese una dirección de correo electrónico válida."
+  },
+  "Too many attempts. Try again in 10 minutes.": {
+    "en": "Too many attempts. Try again in 10 minutes.",
+    "es": "Demasiados intentos. Inténtelo de nuevo en 10 minutos."
+  },
+  "Account service unavailable. Contact Artimex.": {
+    "en": "Account service unavailable. Contact Artimex.",
+    "es": "El servicio de cuentas no está disponible. Contacte a Artimex."
+  },
+  "Invalid account action.": {
+    "en": "Invalid account action.",
+    "es": "Acción de cuenta no válida."
+  },
+  "Account already changed. Please sign in again.": {
+    "en": "Account already changed. Please sign in again.",
+    "es": "La cuenta ya se ha modificado. Inicie sesión de nuevo."
+  },
+  "Choose a password different from your current password.": {
+    "en": "Choose a password different from your current password.",
+    "es": "Elija una contraseña diferente de la actual."
   }
 }

@@ -5,6 +5,7 @@ import { randomUUID, randomBytes, scryptSync } from 'node:crypto';
 import { profiles } from '../lib/profiles.mjs';
 import { command, audit } from '../lib/store.mjs';
 import { sameOrigin, checkPassword, verify } from '../lib/auth.mjs';
+import { recoveryGrant, clearRecoveryCookie } from '../lib/password-recovery.mjs';
 const cookie=(req)=>(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('artimex_session='))?.slice(16);
 export default async function handler(req,res) {
  res.setHeader('Cache-Control','no-store');
@@ -17,27 +18,36 @@ export default async function handler(req,res) {
   const user=data?.type==='password_change'&&(await profiles()).find(u=>u.email===data.email&&u.active!==false);
   if(!user||requiresEmail2fa(user.email)&&data.mfa!==true) return res.status(401).json({error:'Sign in again with your temporary password.'});
   const raw=await command('GET','portal:account:'+user.email),stored=raw&&JSON.parse(raw);
-  if(!stored||!stored.mustChangePassword||stored.version!==data.version||temporaryExpired(stored)) return res.status(401).json({error:'Temporary password expired or already used.'});
+  const recovery=data.recovery?await recoveryGrant(data):null;
+  if(!stored||stored.version!==data.version||(data.recovery?!recovery:!stored.mustChangePassword||temporaryExpired(stored))) return res.status(401).json({error:'Temporary password expired or already used.'});
   const acknowledgment=req.body.privacyAcknowledgment;
   const spanish=req.headers['x-portal-language']==='es';
   if(acknowledgment?.acknowledged!==true||!['en','es'].includes(acknowledgment?.language))return res.status(422).json({code:'PRIVACY_ACK_REQUIRED',error:spanish?'Reconozca la recepción del aviso de privacidad antes de activar la cuenta.':'Acknowledge receipt of the privacy notice before activating the account.'});
   if(acknowledgment.version!==PRIVACY_VERSION||acknowledgment.hash!==PRIVACY_HASH)return res.status(409).json({code:'PRIVACY_NOTICE_UPDATED',error:spanish?'El aviso ha cambiado. Lea la versión actual y marque la casilla de nuevo.':'The notice has changed. Review the current version and check the acknowledgment again.'});
   const password=req.body.newPassword;
   if(typeof password!=='string'||password.length<12||password.length>256) return res.status(400).json({error:'Choose a new password of 12–256 characters.'});
-  if(checkPassword(password,stored)) return res.status(400).json({error:'Choose a different password from your temporary password.'});
+  if(checkPassword(password,stored)) return res.status(400).json({error:data.recovery?'Choose a password different from your current password.':'Choose a different password from your temporary password.'});
   const salt=randomBytes(16).toString('hex'),version=randomUUID();
   const noticeKey='portal:privacy:'+user.email,versionKey=noticeKey+':'+PRIVACY_VERSION;
   const [previous,previousVersion]=await Promise.all([command('GET',noticeKey),command('GET',versionKey)]);
   const at=new Date().toISOString(),context=access(req);
-  const acknowledgmentRecord={email:user.email,version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at,firstAcknowledgedAt:previousVersion?JSON.parse(previousVersion).firstAcknowledgedAt:at,method:'temporary_password_activation',...context};
+  const acknowledgmentRecord={email:user.email,version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at,firstAcknowledgedAt:previousVersion?JSON.parse(previousVersion).firstAcknowledgedAt:at,method:data.recovery?'password_recovery':'temporary_password_activation',...context};
   const event=JSON.stringify({id:randomUUID(),at,type:'password_changed',email:user.email,restaurant:user.restaurant||'',privacyAcknowledgment:{version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,acknowledgedAt:at}});
   const changed=await command('MULTICAS',[
    {key:'portal:account:'+user.email,expected:raw,value:JSON.stringify({salt,hash:scryptSync(password,salt,64).toString('hex'),version,mustChangePassword:false})},
    {key:noticeKey,expected:previous,value:JSON.stringify(acknowledgmentRecord)},
-   {key:versionKey,expected:previousVersion,value:JSON.stringify(acknowledgmentRecord)}
+   {key:versionKey,expected:previousVersion,value:JSON.stringify(acknowledgmentRecord)},
+   ...(recovery||[])
   ],event);
   if(!changed)return res.status(409).json({error:'Account already changed. Please sign in again.'});
   await audit('privacy_acknowledged',user,{version:PRIVACY_VERSION,noticeHash:PRIVACY_HASH,language:acknowledgment.language,...context}).catch(()=>{});
+  if(data.recovery) {
+   // Rotate the account version first; notification failure must not undo the reset.
+   try{await command('SENDRECOVERY',user.email,'',spanish?'es':'en','changed');}catch{await audit('password_recovery_notification_failed',user).catch(()=>{});}
+   await audit('password_recovery_completed',user,context).catch(()=>{});
+   res.setHeader('Set-Cookie',[clearRecoveryCookie(),'artimex_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0','artimex_email_challenge=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0']);
+   return res.status(200).json({passwordReset:true});
+  }
   await audit('login',user,context).catch(()=>{});
   return await issueAccess(req,res,user,version,false,data.mfa===true);
  }

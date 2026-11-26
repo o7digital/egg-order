@@ -28,9 +28,32 @@ def send_otp(args):
     with smtplib.SMTP(config.get('host','postfix-mailcow'),int(config.get('port',25)),timeout=15) as smtp:
         smtp.ehlo();smtp.send_message(message)
     return {'queued':True,'messageId':message['Message-ID']}
+def send_recovery(args):
+    email,code,language,purpose=args
+    if not isinstance(email,str) or len(email)>254 or language not in ('en','es') or purpose not in ('reset','changed'): raise ValueError()
+    if not isinstance(code,str) or (purpose=='reset' and not re.fullmatch(r'[0-9]{6}',code)) or (purpose=='changed' and code!=''): raise ValueError()
+    # Recovery is available to approved active accounts, independently of the MFA pilot.
+    with connect() as db:
+        row=db.execute('SELECT value FROM kv WHERE key=?',('portal:profiles',)).fetchone()
+    if not row or not any(u.get('email')==email and u.get('active',True) is not False for u in json.loads(row[0])): raise ValueError()
+    with open(os.environ.get('PORTAL_MAIL_CONFIG','/data/mail-config.json')) as stream: config=json.load(stream)
+    message=EmailMessage();message['From']='Artimex Portal <'+config['from']+'>';message['To']=email
+    if purpose=='reset':
+        message['Subject']='Artimex — Restablecer contraseña' if language=='es' else 'Artimex — Reset your password'
+        if language=='es': text=f'Su código para restablecer la contraseña es: {code}\n\nVence en 10 minutos. Ingréselo únicamente en https://orderstogb.artimexbakery.com/\nEste código solo permite elegir una contraseña nueva. No lo comparta. Si no solicitó el cambio, ignore este mensaje: su contraseña actual sigue vigente.\n\n¿Necesita ayuda? christian.garcia@gallogiro.com\n\nArtimex Portal'
+        else: text=f'Your password reset code is: {code}\n\nExpires in 10 minutes. Enter it only at https://orderstogb.artimexbakery.com/\nThis code only lets you choose a new password. Do not share it. If you did not request this change, ignore this email: your current password still works.\n\nNeed help? christian.garcia@gallogiro.com\n\nArtimex Portal'
+    else:
+        message['Subject']='Artimex — Contraseña actualizada' if language=='es' else 'Artimex — Password changed'
+        if language=='es': text='Su contraseña del portal Artimex se ha actualizado y las sesiones anteriores se han cerrado.\n\nIngrese con su nueva contraseña en https://orderstogb.artimexbakery.com/\nSi no realizó este cambio, contacte de inmediato a christian.garcia@gallogiro.com.\n\nArtimex Portal'
+        else: text='Your Artimex portal password has been changed and previous sessions have been signed out.\n\nSign in with your new password at https://orderstogb.artimexbakery.com/\nIf you did not make this change, contact christian.garcia@gallogiro.com immediately.\n\nArtimex Portal'
+    message['Date']=formatdate(localtime=False);message['Message-ID']=make_msgid(domain=config['from'].split('@')[1]);message.set_content(text)
+    with smtplib.SMTP(config.get('host','postfix-mailcow'),int(config.get('port',25)),timeout=15) as smtp:
+        smtp.ehlo();smtp.send_message(message)
+    return {'queued':True,'messageId':message['Message-ID']}
 def command(args):
     op, *a = args
     if op=='SENDOTP': return send_otp(a)
+    if op=='SENDRECOVERY': return send_recovery(a)
     with connect() as db:
         db.execute('BEGIN IMMEDIATE')
         db.execute('DELETE FROM kv WHERE expires IS NOT NULL AND expires <= ?', (time.time(),))
@@ -58,7 +81,7 @@ def command(args):
                 row=db.execute('SELECT value FROM kv WHERE key=?',(key,)).fetchone()
                 if (row[0] if row else None)!=change['expected']: return 0
             for change in changes:
-                db.execute('INSERT INTO kv(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,expires=NULL',(change['key'],change['value']))
+                db.execute('INSERT INTO kv(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',(change['key'],change['value']))
             if len(a)>1: db.execute('INSERT INTO events(value) VALUES(?)',(a[1],))
             return 1
         if op=='LPUSH' and a[0]=='portal:events':
