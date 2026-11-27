@@ -22,7 +22,7 @@ export default async function handler(req,res) {
   if(!user||requiresEmail2fa(user.email)&&data.mfa!==true) return res.status(401).json({error:'Sign in again with your temporary password.'});
   const raw=await command('GET','portal:account:'+user.email),stored=raw&&JSON.parse(raw);
   const recovery=data.recovery?await recoveryGrant(data):null;
-  if(!stored||stored.version!==data.version||(data.recovery?!recovery:!stored.mustChangePassword||temporaryExpired(stored))) return res.status(401).json({error:'Temporary password expired or already used.'});
+  if(!stored||stored.passwordless||stored.version!==data.version||(data.recovery?!recovery:!stored.mustChangePassword||temporaryExpired(stored))) return res.status(401).json({error:'Temporary password expired or already used.'});
   if(stored.authenticatorId&&!data.recovery&&data.authenticatorId!==stored.authenticatorId)return res.status(401).json({error:'Sign in again with your temporary password.'});
   const acknowledgment=req.body.privacyAcknowledgment;
   const spanish=req.headers['x-portal-language']==='es';
@@ -56,14 +56,19 @@ export default async function handler(req,res) {
   return await issueAccess(req,res,user,version,false,data.mfa===true,data.authenticatorId);
  }
  const email=typeof req.body?.email==='string'?req.body.email.trim().toLowerCase():'';
- if(!email||email.length>254||typeof req.body.password!=='string'||req.body.password.length>256) return res.status(401).json({error:'Incorrect email address or password.'});
+ const emailLogin=req.body?.action==='email-login';
+ if(!email||email.length>254||!emailLogin&&(typeof req.body.password!=='string'||req.body.password.length>256)) return res.status(401).json({error:'Incorrect email address or password.'});
  const window=Math.floor(Date.now()/600000);
  const rate=await command('INCRTTL',`portal:rate:${email}:${window}`,660);
  const ip=String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||'unknown').split(',')[0].trim().slice(0,100);
  const ipRate=await command('INCRTTL',`portal:ip:${ip}:${window}`,660);
  if(rate>10||ipRate>100) return res.status(429).json({error:'Too many attempts. Try again in 10 minutes.'});
  const user=(await profiles()).find(u=>u.email===email&&u.active!==false),raw=user&&await command('GET','portal:account:'+email),stored=raw&&JSON.parse(raw);
- if(!stored||!checkPassword(req.body.password,stored)||(stored.mustChangePassword&&temporaryExpired(stored))) {
+ if(emailLogin) {
+  if(!stored?.passwordless||stored.mustChangePassword)return res.status(401).json({error:'Email sign-in is not available for this account. Use your password or contact IT.'});
+  return await issueAccess(req,res,user,stored.version,false);
+ }
+ if(!stored||stored.passwordless||!checkPassword(req.body.password,stored)||(stored.mustChangePassword&&temporaryExpired(stored))) {
   await audit('login_failed',user||{email},access(req));return res.status(401).json({error:'Incorrect email address or password, or temporary password expired.'});
  }
  if(!requiresEmail2fa(user.email)&&!stored.authenticatorId)await audit(stored.mustChangePassword?'temporary_login':'login',user,access(req));

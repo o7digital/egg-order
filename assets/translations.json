@@ -454,5 +454,9 @@
   "Choose a password different from your current password.": {
     "en": "Choose a password different from your current password.",
     "es": "Elija una contraseña diferente de la actual."
+  },
+  "Email sign-in is not available for this account. Use your password or contact IT.": {
+    "en": "Email sign-in is not available for this account. Use your password or contact IT.",
+    "es": "El acceso por correo no está disponible para esta cuenta. Use su contraseña o contacte a TI."
   }
 }
